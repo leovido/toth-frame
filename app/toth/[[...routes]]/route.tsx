@@ -1,58 +1,49 @@
 /** @jsxImportSource frog/jsx */
 
 import React from "react";
-import { Button, Frog } from "frog";
+import { Button, Frog, TextInput } from "frog";
 import { devtools } from "frog/dev";
 import { handle } from "frog/next";
 import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
-import { castNetworth } from "./fetch";
+import { firstRun } from "./helpers";
 
 interface State {
 	totalDegen: number;
 	dollarValue: string;
+	castIdFid: number;
+	recipients: { [key: string]: number };
 }
 
-const firstRun = async (castId: string, forceRefresh: boolean) => {
-	const willRun = forceRefresh && process.env.CONFIG === "DEV";
-	const items = willRun
-		? await castNetworth(castId).catch((e) => {
-				console.error(`client items error: ${e}`);
-
-				throw new Error(`client items error: ${e}`);
-			})
-		: {
-				totalAmount: 100,
-				dollarValue: "$111.11",
-				topThree: [
-					{
-						username: "test",
-						amount: 100000
-					},
-					{
-						username: "test",
-						amount: 33334
-					},
-					{
-						username: "test",
-						amount: 31242
-					}
-				],
-				isBoosted: true
-			};
-
-	return {
-		totalAmount: items.totalAmount,
-		dollarValue: items.dollarValue,
-		topThree: items.topThree,
-		isBoosted: items.isBoosted
-	};
+const generateIntents = (fid: number, castIdFid: number) => {
+	console.warn(fid, castIdFid);
+	if (fid === castIdFid) {
+		return [
+			<Button key={"check"} action="/check" value="check">
+				Refresh
+			</Button>,
+			<Button key={"split"} action="/split" value="split">
+				Split
+			</Button>
+		];
+	} else {
+		return [
+			<Button key={"check"} action="/check" value="check">
+				Refresh
+			</Button>,
+			<Button key={"start"} action="/" value="start">
+				Start
+			</Button>
+		];
+	}
 };
 
 const app = new Frog<{ State: State }>({
 	initialState: {
 		totalDegen: 0,
-		dollarValue: "0"
+		dollarValue: "0",
+		castIdFid: 0,
+		recipients: []
 	},
 	assetsPath: "/",
 	basePath: "/toth",
@@ -128,6 +119,87 @@ app.frame("/", async (c) => {
 	});
 });
 
+app.frame("/split", async (c) => {
+	const { inputText, frameData, deriveState, buttonValue } = c;
+
+	const state = deriveState((previousState) => {
+		console.warn(buttonValue, "button value");
+		if (buttonValue === "split") {
+			const fidsSplit = inputText?.split(",").map((fid) => fid.trim()) || [];
+			const count = fidsSplit.length;
+			const share = count > 0 ? previousState.totalDegen / count + 1 : 0;
+			const fidDictionary: Record<string, number> = {};
+
+			fidsSplit.forEach((fid) => {
+				fidDictionary[fid] = share;
+			});
+
+			previousState.recipients = fidDictionary;
+		}
+	});
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					justifyContent: "center",
+					textAlign: "center",
+					width: "100%"
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8"
+					}}
+				>
+					🎩 Tip O&apos; The Hat - Split 🎩
+				</h1>
+				{Object.entries(state.recipients).length > 0 && (
+					<div style={{ display: "flex", color: "white" }}>
+						{Object.entries(state.recipients).map(([key, value]) => (
+							<div
+								key={`${key}-${value}`}
+								style={{
+									display: "flex",
+									flexDirection: "row",
+									justifyContent: "space-around"
+								}}
+							>
+								<h1 key={key}>{key}</h1>
+								<h1 key={value}>{value}</h1>
+							</div>
+						))}
+					</div>
+				)}
+				{Object.entries(state.recipients).length === 0 && (
+					<h2 style={{ fontSize: "3rem", color: "#D6FFF6", fontWeight: 400 }}>
+						Add the user&apos;s FID separated by a comma
+					</h2>
+				)}
+			</div>
+		),
+		intents: [
+			<Button key={"confirm-split"} action="/split" value="split">
+				Confirm
+			</Button>,
+			<TextInput
+				key={"text-input"}
+				placeholder="FIDs to share tips, e.g. 528, 5254, 203666"
+			/>
+		]
+	});
+});
+
 app.frame("/check", async (c) => {
 	const { buttonValue, frameData, deriveState, verified } = c;
 	const forceRefresh = buttonValue === "check";
@@ -173,14 +245,19 @@ app.frame("/check", async (c) => {
 		});
 	}
 
-	const castId = "https://warpcast.com/leovido.eth/0x7d10bcc0";
+	const castId = "https://warpcast.com/rjs/0x1f23893b";
 
-	const { totalAmount, dollarValue, topThree, isBoosted } = await firstRun(
-		castId,
-		forceRefresh
-	);
+	const {
+		totalAmount,
+		totalAmountFormatted,
+		dollarValue,
+		topThree,
+		isBoosted,
+		castIdFid
+	} = await firstRun(castId, forceRefresh);
 
 	const state = deriveState((previousState) => {
+		previousState.castIdFid = castIdFid;
 		switch (buttonValue) {
 			case "refresh":
 			case "check":
@@ -240,7 +317,7 @@ app.frame("/check", async (c) => {
 								{index + 1}. @{value.username}
 							</h1>
 							<h1 style={{ color: "white", fontFamily: "Open Sans" }}>
-								{value.amount} $DEGEN
+								{value.amount.toLocaleString("en-US")} $DEGEN
 							</h1>
 						</div>
 					))}
@@ -253,7 +330,8 @@ app.frame("/check", async (c) => {
 						}}
 					>
 						<h1 style={{ fontFamily: "Space Mono", fontSize: "3rem" }}>
-							Cast worth: {totalAmount} $DEGEN {isBoosted ? "(1.5x)" : ""}
+							Tipped (so far): {totalAmountFormatted} $DEGEN{" "}
+							{isBoosted ? "(1.5x)" : ""}
 						</h1>
 					</div>
 					<h1
@@ -264,16 +342,12 @@ app.frame("/check", async (c) => {
 							justifyContent: "center"
 						}}
 					>
-						USD value: {dollarValue}
+						USD value: {Number(dollarValue).toLocaleString("en-US")}
 					</h1>
 				</div>
 			</div>
 		),
-		intents: [
-			<Button key={"check"} action="/check" value="check">
-				Refresh
-			</Button>
-		]
+		intents: generateIntents(frameData?.fid ?? 0, state.castIdFid)
 	});
 });
 

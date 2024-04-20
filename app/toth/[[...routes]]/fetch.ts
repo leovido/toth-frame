@@ -56,6 +56,7 @@ export const castNetworth = async (
 		// Fetch cast information from the provided Warpcast URL
 		const castInfo = await fetchCastInfo(warpcastURL);
 
+		const castIdFid = castInfo.cast.author.fid;
 		const channelURL = castInfo.cast.parent_url || "";
 		const multiplier = channelMap.get(channelURL) !== undefined ? 1.5 : 1;
 
@@ -86,6 +87,8 @@ export const castNetworth = async (
 		const totalAmount: number =
 			degenCasts.reduce((acc, cast) => acc + cast.amount, 0) * multiplier;
 
+		const totalAmountFormatted = totalAmount.toLocaleString("en-US");
+
 		// TODO: make this dynamic to fetch real-time market value
 		const unitPrice = 0.034;
 		const dollarValue = totalAmount * unitPrice;
@@ -94,21 +97,24 @@ export const castNetworth = async (
 		console.log(`Total $DEGEN amount: ${totalAmount}`);
 		console.log(`Dollar value today: $${dollarValue.toFixed(2)}`);
 
-		console.log(multiplier, "le multiplier");
 		return {
 			totalAmount,
+			totalAmountFormatted,
 			dollarValue: dollarValue.toFixed(2),
 			topThree,
-			isBoosted: multiplier === 1.5
+			isBoosted: multiplier === 1.5,
+			castIdFid
 		};
 	} catch (error) {
 		console.error("An error occurred:", error);
 
 		return {
 			totalAmount: 0,
+			totalAmountFormatted: "0",
 			dollarValue: "$0.00",
 			topThree: [],
-			isBoosted: false
+			isBoosted: false,
+			castIdFid: 1
 		};
 	}
 };

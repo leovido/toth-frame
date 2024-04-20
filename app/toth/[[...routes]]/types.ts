@@ -11,11 +11,14 @@ export interface DegenResponse {
 export interface DegenCast {
 	username: string;
 	amount: number;
+	amountFormatted: string;
 }
 
 export interface CastWorthModel {
 	totalAmount: number;
+	totalAmountFormatted: string;
 	dollarValue: string;
 	topThree: DegenCast[];
 	isBoosted: boolean;
+	castIdFid: number;
 }
