@@ -27,26 +27,25 @@ const firstRun = async (castId: string, forceRefresh: boolean) => {
 				topThree: [
 					{
 						username: "test",
-						amount: 100000,
-						channel: "zora"
+						amount: 100000
 					},
 					{
 						username: "test",
-						amount: 33334,
-						channel: "zora"
+						amount: 33334
 					},
 					{
 						username: "test",
-						amount: 31242,
-						channel: "degen"
+						amount: 31242
 					}
-				]
+				],
+				isBoosted: true
 			};
 
 	return {
 		totalAmount: items.totalAmount,
 		dollarValue: items.dollarValue,
-		topThree: items.topThree
+		topThree: items.topThree,
+		isBoosted: items.isBoosted
 	};
 };
 
@@ -176,7 +175,7 @@ app.frame("/check", async (c) => {
 
 	const castId = "https://warpcast.com/leovido.eth/0x7d10bcc0";
 
-	const { totalAmount, dollarValue, topThree } = await firstRun(
+	const { totalAmount, dollarValue, topThree, isBoosted } = await firstRun(
 		castId,
 		forceRefresh
 	);
@@ -254,11 +253,18 @@ app.frame("/check", async (c) => {
 						}}
 					>
 						<h1 style={{ fontFamily: "Space Mono", fontSize: "3rem" }}>
-							Cast worth: {totalAmount} $DEGEN
+							Cast worth: {totalAmount} $DEGEN {isBoosted ? "(1.5x)" : ""}
 						</h1>
 					</div>
-					<h1 style={{ fontFamily: "Space Mono", fontSize: "3rem" }}>
-						$ value: {dollarValue}
+					<h1
+						style={{
+							fontFamily: "Space Mono",
+							fontSize: "3rem",
+							marginTop: -8,
+							justifyContent: "center"
+						}}
+					>
+						USD value: {dollarValue}
 					</h1>
 				</div>
 			</div>

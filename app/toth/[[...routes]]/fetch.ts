@@ -2,7 +2,7 @@
 
 // Import necessary modules from the Neynar Node.js SDK
 import { NeynarAPIClient, CastParamType } from "@neynar/nodejs-sdk";
-import { DegenCast } from "./types";
+import { CastWorthModel, DegenCast } from "./types";
 import { channelMap } from "./boostedChannels";
 
 // Initialize Neynar API client with your API key
@@ -49,7 +49,9 @@ async function fetchAllCastsInThread(threadHash: string) {
 	}
 }
 
-export const castNetworth = async (warpcastURL: string) => {
+export const castNetworth = async (
+	warpcastURL: string
+): Promise<CastWorthModel> => {
 	try {
 		// Fetch cast information from the provided Warpcast URL
 		const castInfo = await fetchCastInfo(warpcastURL);
@@ -92,10 +94,12 @@ export const castNetworth = async (warpcastURL: string) => {
 		console.log(`Total $DEGEN amount: ${totalAmount}`);
 		console.log(`Dollar value today: $${dollarValue.toFixed(2)}`);
 
+		console.log(multiplier, "le multiplier");
 		return {
 			totalAmount,
 			dollarValue: dollarValue.toFixed(2),
-			topThree
+			topThree,
+			isBoosted: multiplier === 1.5
 		};
 	} catch (error) {
 		console.error("An error occurred:", error);
@@ -103,7 +107,8 @@ export const castNetworth = async (warpcastURL: string) => {
 		return {
 			totalAmount: 0,
 			dollarValue: "$0.00",
-			topThree: []
+			topThree: [],
+			isBoosted: false
 		};
 	}
 };
