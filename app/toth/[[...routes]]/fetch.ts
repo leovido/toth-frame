@@ -6,7 +6,7 @@ import { CastWorthModel, DegenCast } from "./types";
 import { channelMap } from "./boostedChannels";
 
 // Initialize Neynar API client with your API key
-const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY || "");
+export const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY || "");
 
 // Function to fetch cast information from a Warpcast URL
 async function fetchCastInfo(warpcastUrl: string) {

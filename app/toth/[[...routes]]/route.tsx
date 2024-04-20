@@ -7,12 +7,15 @@ import { handle } from "frog/next";
 import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
 import { firstRun } from "./helpers";
+import { client } from "./fetch";
 
 interface State {
+	didNominate: boolean;
 	totalDegen: number;
 	dollarValue: string;
 	castIdFid: number;
 	recipients: { [key: string]: number };
+	isPowerBadgeUser: boolean;
 }
 
 const generateIntents = (fid: number, castIdFid: number) => {
@@ -112,31 +115,70 @@ app.frame("/", async (c) => {
 			</div>
 		),
 		intents: [
-			<Button key={"check"} action="/check" value="check">
-				Check
+			<Button key={"nominate"} action="/nominate" value="nominate">
+				Nominate
+			</Button>,
+			<Button key={"vote"} action="/vote" value="vote">
+				Vote
+			</Button>,
+			<Button key={"winners"} action="/winners" value="winners">
+				Leaderboard
+			</Button>,
+			<Button
+				key={"autosubscribe"}
+				action="/autosubscribe"
+				value="autosubscribe"
+			>
+				Autosubscribe
 			</Button>
 		]
 	});
 });
 
-app.frame("/split", async (c) => {
-	const { inputText, frameData, deriveState, buttonValue } = c;
+const generateNominateIntents = (didNominate: boolean) => {
+	if (didNominate) {
+		return [
+			<Button key={"start"} action="/" value="start">
+				Start
+			</Button>,
+			<Button key={"history"} action="/history" value="history">
+				History
+			</Button>
+		];
+	} else {
+		return [
+			<TextInput
+				key={"text-input"}
+				placeholder="https://warpcast.com/sum/0x8f3e2c44"
+			/>,
+			<Button key={"nominate"} action="/nominate" value="nominate">
+				Submit
+			</Button>,
+			<Button key={"back"} action="/" value="back">
+				Back
+			</Button>
+		];
+	}
+};
+
+app.frame("/nominate", async (c) => {
+	const { inputText, deriveState, frameData } = c;
+
+	const fetchedDidNominate = false;
+
+	const response = await client.fetchBulkUsers([frameData?.fid || 0]);
+
+	// Power badge is indeed in the Users object.
+	const isPowerBadgeUser: boolean = response.users[0].power_badge;
 
 	const state = deriveState((previousState) => {
-		console.warn(buttonValue, "button value");
-		if (buttonValue === "split") {
-			const fidsSplit = inputText?.split(",").map((fid) => fid.trim()) || [];
-			const count = fidsSplit.length;
-			const share = count > 0 ? previousState.totalDegen / count + 1 : 0;
-			const fidDictionary: Record<string, number> = {};
-
-			fidsSplit.forEach((fid) => {
-				fidDictionary[fid] = share;
-			});
-
-			previousState.recipients = fidDictionary;
-		}
+		previousState.didNominate = fetchedDidNominate;
+		previousState.isPowerBadgeUser = isPowerBadgeUser;
 	});
+
+	const parts = inputText?.split("warpcast.com/") || [];
+	const result = parts[1] ? parts[1] : "";
+	console.log(result);
 
 	return c.res({
 		image: (
@@ -162,41 +204,43 @@ app.frame("/split", async (c) => {
 						color: "#38BDF8"
 					}}
 				>
-					🎩 Tip O&apos; The Hat - Split 🎩
+					🎩 TOTH - Nominate 🎩
 				</h1>
-				{Object.entries(state.recipients).length > 0 && (
-					<div style={{ display: "flex", color: "white" }}>
-						{Object.entries(state.recipients).map(([key, value]) => (
-							<div
-								key={`${key}-${value}`}
-								style={{
-									display: "flex",
-									flexDirection: "row",
-									justifyContent: "space-around"
-								}}
-							>
-								<h1 key={key}>{key}</h1>
-								<h1 key={value}>{value}</h1>
-							</div>
-						))}
+
+				{!state.didNominate && (
+					<div style={{ display: "flex", flexDirection: "column" }}>
+						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
+							1. Welcome! To nominate, you must be a power badge user
+						</h2>
+						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
+							2. Paste the cast you would like to nominate
+						</h2>
+						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
+							3. Earn $DEGEN for nominating 4 times a week
+						</h2>
 					</div>
 				)}
-				{Object.entries(state.recipients).length === 0 && (
-					<h2 style={{ fontSize: "3rem", color: "#D6FFF6", fontWeight: 400 }}>
-						Add the user&apos;s FID separated by a comma
-					</h2>
+				{state.didNominate && (
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							justifyContent: "center"
+						}}
+					>
+						<h2 style={{ fontSize: "4rem", color: "#D6FFF6", fontWeight: 400 }}>
+							You nominated @sum
+						</h2>
+						<h2
+							style={{ fontSize: "3.5rem", color: "#D6FFF6", fontWeight: 400 }}
+						>
+							Voting start in 7h:49m
+						</h2>
+					</div>
 				)}
 			</div>
 		),
-		intents: [
-			<Button key={"confirm-split"} action="/split" value="split">
-				Confirm
-			</Button>,
-			<TextInput
-				key={"text-input"}
-				placeholder="FIDs to share tips, e.g. 528, 5254, 203666"
-			/>
-		]
+		intents: generateNominateIntents(state.didNominate)
 	});
 });
 
