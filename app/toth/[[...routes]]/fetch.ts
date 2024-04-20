@@ -2,6 +2,8 @@
 
 // Import necessary modules from the Neynar Node.js SDK
 import { NeynarAPIClient, CastParamType } from "@neynar/nodejs-sdk";
+import { DegenCast } from "./types";
+import { channelMap } from "./boostedChannels";
 
 // Initialize Neynar API client with your API key
 const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY || "");
@@ -47,12 +49,13 @@ async function fetchAllCastsInThread(threadHash: string) {
 	}
 }
 
-export const castNetworth = async (
-	warpcastURL: string = "https://warpcast.com/papa/0x7083fd28"
-) => {
+export const castNetworth = async (warpcastURL: string) => {
 	try {
 		// Fetch cast information from the provided Warpcast URL
 		const castInfo = await fetchCastInfo(warpcastURL);
+
+		const channelURL = castInfo.cast.parent_url || "";
+		const multiplier = channelMap.get(channelURL) !== undefined ? 1.5 : 1;
 
 		// Fetch all casts in the thread using the thread hash
 		const allCastsInThread = await fetchAllCastsInThread(
@@ -60,27 +63,26 @@ export const castNetworth = async (
 		);
 
 		// Filter and process casts that mention an amount of $DEGEN
-		const degenCasts: { username: string; amount: number }[] =
-			allCastsInThread.result.casts
-				.filter(
-					(cast) => /(\d+)\s*\$degen/i.test(cast.text) // Regular expression to match the pattern
-				)
-				.map((cast) => {
-					const match = cast.text.match(/(\d+)\s*\$degen/i); // Extract the amount
+		const degenCasts: DegenCast[] = allCastsInThread.result.casts
+			.filter(
+				(cast) => /(\d+)\s*\$degen/i.test(cast.text) // Regular expression to match the pattern
+			)
+			.map((cast) => {
+				const match = cast.text.match(/(\d+)\s*\$degen/i); // Extract the amount
+
+				if (match !== null) {
 					return {
-						channel: cast.parent_url,
 						username: cast.author.username, // Extract the username
 						amount: parseInt(match[1], 10) // Extract the matched amount and convert to integer
 					};
-				});
+				}
+			});
 
-		const topThree = degenCasts.sort((a, b) => a.amount - b.amount).slice(0, 2);
+		const topThree = degenCasts.sort((a, b) => b.amount - a.amount).slice(0, 3);
 
 		// Calculate the total amount of $DEGEN
-		const totalAmount: number = degenCasts.reduce(
-			(acc, cast) => acc + cast.amount,
-			0
-		);
+		const totalAmount: number =
+			degenCasts.reduce((acc, cast) => acc + cast.amount, 0) * multiplier;
 
 		// TODO: make this dynamic to fetch real-time market value
 		const unitPrice = 0.034;

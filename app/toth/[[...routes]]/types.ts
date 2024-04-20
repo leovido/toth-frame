@@ -7,3 +7,9 @@ export interface DegenResponse {
 	tip_allowance: string;
 	remaining_allowance: string;
 }
+
+export interface DegenCast {
+	username: string;
+	amount: number;
+	channel: string;
+}

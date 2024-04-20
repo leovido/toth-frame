@@ -26,16 +26,19 @@ const firstRun = async (castId: string, forceRefresh: boolean) => {
 				dollarValue: "$111.11",
 				topThree: [
 					{
-						username: "@test",
-						amount: 100000
+						username: "test",
+						amount: 100000,
+						channel: "zora"
 					},
 					{
-						username: "@test",
-						amount: 33334
+						username: "test",
+						amount: 33334,
+						channel: "zora"
 					},
 					{
-						username: "@test",
-						amount: 31242
+						username: "test",
+						amount: 31242,
+						channel: "degen"
 					}
 				]
 			};
@@ -111,7 +114,7 @@ app.frame("/", async (c) => {
 						color: "#38BDF8"
 					}}
 				>
-					🎩TOTH🎩
+					🎩 Tip O&apos; The Hat 🎩
 				</h1>
 				<h2 style={{ fontSize: "3rem", color: "#D6FFF6", fontWeight: 400 }}>
 					Pool tips, Fund awesomeness
@@ -171,7 +174,7 @@ app.frame("/check", async (c) => {
 		});
 	}
 
-	const castId = "https://warpcast.com/leovido.eth/0xd6e20741";
+	const castId = "https://warpcast.com/leovido.eth/0x7d10bcc0";
 
 	const { totalAmount, dollarValue, topThree } = await firstRun(
 		castId,
@@ -196,7 +199,7 @@ app.frame("/check", async (c) => {
 				style={{
 					fontFamily: "Open Sans",
 					alignItems: "center",
-					background: "linear-gradient(to right, #231651, #17101F)",
+					background: "#17101F",
 					backgroundSize: "100% 100%",
 					display: "flex",
 					flexDirection: "column",
@@ -210,10 +213,10 @@ app.frame("/check", async (c) => {
 						flex: 1,
 						fontFamily: "DM Serif Display",
 						fontSize: "5rem",
-						color: "#D6FFF6"
+						color: "#38BDF8"
 					}}
 				>
-					🎩 TOTH 🎩
+					🎩 Tip O&apos; The Hat 🎩
 				</h1>
 				<div
 					style={{
@@ -223,36 +226,39 @@ app.frame("/check", async (c) => {
 						justifyContent: "center"
 					}}
 				>
-					{topThree.map((value) => (
+					{topThree.map((value, index) => (
 						<div
 							key={value.username}
 							style={{
 								display: "flex",
 								flexDirection: "row",
 								color: "#30E000",
-								justifyContent: "space-around"
+								justifyContent: "space-around",
+								fontSize: "1.1rem"
 							}}
 						>
-							<h1>{value.username}</h1>
-							<h1>{value.amount} $DEGEN</h1>
+							<h1 style={{ color: "white", fontFamily: "Open Sans" }}>
+								{index + 1}. @{value.username}
+							</h1>
+							<h1 style={{ color: "white", fontFamily: "Open Sans" }}>
+								{value.amount} $DEGEN
+							</h1>
 						</div>
 					))}
 					<div
 						style={{
 							display: "flex",
 							flexDirection: "row",
-							color: "#30E000"
+							color: "#30E000",
+							justifyContent: "space-between"
 						}}
 					>
 						<h1 style={{ fontFamily: "Space Mono", fontSize: "3rem" }}>
-							Cast worth:
-						</h1>
-						<h1 style={{ fontFamily: "SF-Mono", fontSize: "3rem" }}>
-							{totalAmount} $DEGEN
+							Cast worth: {totalAmount} $DEGEN
 						</h1>
 					</div>
 					<h1 style={{ fontFamily: "Space Mono", fontSize: "3rem" }}>
-						Dollar value: {dollarValue}
+						$ value: {dollarValue}
 					</h1>
 				</div>
 			</div>
