@@ -7,7 +7,6 @@ import { handle } from "frog/next";
 import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
 import { firstRun } from "./helpers";
-import { client } from "./fetch";
 import { NominationAndVotingSystem } from "./votingSystem/voting";
 
 const votingSystem = new NominationAndVotingSystem();
@@ -208,7 +207,7 @@ const generateNominateIntents = (didNominate: boolean) => {
 };
 
 app.frame("/nominate", async (c) => {
-	const { inputText, deriveState, frameData } = c;
+	const { inputText, deriveState } = c;
 
 	const nominationInput = inputText?.split("/") || [];
 
