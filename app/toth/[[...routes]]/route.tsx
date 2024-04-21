@@ -7,12 +7,12 @@ import { handle } from "frog/next";
 import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
 import { firstRun } from "./helpers";
-import { NominationAndVotingSystem } from "./votingSystem/voting";
-
-const votingSystem = new NominationAndVotingSystem();
+import { votingSystem } from "./client";
+import { client } from "./fetch";
 
 interface State {
 	didNominate: boolean;
+	isVotingOpen: boolean;
 	totalDegen: number;
 	dollarValue: string;
 	castIdFid: number;
@@ -124,9 +124,39 @@ app.frame("/", async (c) => {
 	});
 });
 
+const calculateNominations = (isNominationOpen: boolean) => {
+	if (!isNominationOpen) {
+		return [];
+	}
+	const entryMap = new Map();
+
+	for (const entry of votingSystem.nominations) {
+		if (entryMap.has(entry.castId)) {
+			const existingEntry = entryMap.get(entry.castId);
+			entryMap.set(entry.castId, { ...entry, count: existingEntry.count + 1 });
+		} else {
+			entryMap.set(entry.castId, { ...entry, count: 1 });
+		}
+	}
+
+	const nominations = Array.from(entryMap.values())
+		.sort((a, b) => b.count - a.count)
+		.map(
+			(item, index) =>
+				`${index + 1}. ${item.user} - ${item.castId} - ${item.count}`
+		);
+
+	return nominations;
+};
+
 app.frame("/status", async (c) => {
 	const isNominationRound = votingSystem.nominationOpen;
 	const isVotingOpen = votingSystem.votingOpen;
+	const nominations = calculateNominations(isNominationRound);
+
+	const shouldShowNominationMessage =
+		nominations.length === 0 && isNominationRound;
+
 	return c.res({
 		image: (
 			<div
@@ -151,11 +181,45 @@ app.frame("/status", async (c) => {
 						color: "#38BDF8"
 					}}
 				>
-					🎩 Tip O&apos; The Hat 🎩
+					🎩 TOTH - Status 🎩
 				</h1>
-				<h2 style={{ fontSize: "3rem", color: "#D6FFF6", fontWeight: 400 }}>
-					Pool tips, Fund awesomeness
-				</h2>
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						color: "#30E000",
+						justifyContent: "center"
+					}}
+				>
+					{nominations.map((value, index) => (
+						<div
+							key={`${value}-${index}`}
+							style={{
+								display: "flex",
+								flexDirection: "row",
+								color: "#30E000",
+								justifyContent: "space-around",
+								fontSize: "1.1rem"
+							}}
+						>
+							<h1 style={{ color: "white", fontFamily: "Open Sans" }}>
+								{value}
+							</h1>
+						</div>
+					))}
+					{shouldShowNominationMessage && (
+						<div style={{ display: "flex", flexDirection: "column" }}>
+							<h1>Nominations start at 12AM UTC</h1>
+						</div>
+					)}
+					{isVotingOpen && (
+						<div style={{ display: "flex", flexDirection: "column" }}>
+							<h1 style={{ fontSize: "3rem" }}>
+								Voting started. Place your votes
+							</h1>
+						</div>
+					)}
+				</div>
 			</div>
 		),
 		intents: [
@@ -164,7 +228,7 @@ app.frame("/status", async (c) => {
 					Nominate
 				</Button>
 			),
-			!isVotingOpen && (
+			isVotingOpen && (
 				<Button key={"vote"} action="/vote" value="vote">
 					Vote
 				</Button>
@@ -183,12 +247,20 @@ app.frame("/status", async (c) => {
 	});
 });
 
-const generateNominateIntents = (didNominate: boolean) => {
+const generateNominateIntents = (
+	didNominate: boolean,
+	isVotingOpen: boolean
+) => {
 	if (didNominate) {
 		return [
 			<Button key={"start"} action="/" value="start">
 				Start
 			</Button>,
+			isVotingOpen && (
+				<Button key={"vote"} action="/vote" value="vote">
+					Vote
+				</Button>
+			),
 			<Button key={"history"} action="/history" value="history">
 				History
 			</Button>
@@ -207,15 +279,44 @@ const generateNominateIntents = (didNominate: boolean) => {
 };
 
 app.frame("/nominate", async (c) => {
-	const { inputText, deriveState } = c;
+	const { frameData, inputText, deriveState, buttonValue } = c;
+
+	const fid = frameData?.fid || 0;
+	const today = new Date();
+	const hours = today.getUTCHours();
+
+	const url = "https://warpcast.com";
+	const castURL = () => {
+		if (inputText) {
+			return inputText.length > 0 ? `${url}/${inputText}` : "";
+		} else {
+			return "";
+		}
+	};
+
+	let isValidCast: boolean = true;
+	await client.lookUpCastByHashOrWarpcastUrl(castURL(), "url").catch((e) => {
+		console.error(e);
+		isValidCast = false || buttonValue === "nominate";
+	});
 
 	const nominationInput = inputText?.split("/") || [];
 
-	votingSystem.nominate({
-		user: nominationInput[0],
-		castId: nominationInput[1]
-	});
-	const fetchedDidNominate = true;
+	if (isValidCast && nominationInput.length === 2) {
+		if (hours < 18) {
+			votingSystem.nominate({
+				user: nominationInput[0],
+				castId: nominationInput[1],
+				fid: frameData?.fid || 0
+			});
+		}
+	}
+
+	const userNomination = votingSystem.nominations.find(
+		(nom) => nom.fid === fid
+	);
+	console.warn(votingSystem.nominations, "nominations");
+	console.warn(userNomination, "userNomination");
 
 	// const response = await client.fetchBulkUsers([frameData?.fid || 0]);
 
@@ -224,7 +325,8 @@ app.frame("/nominate", async (c) => {
 	const isPowerBadgeUser: boolean = true;
 
 	const state = deriveState((previousState) => {
-		previousState.didNominate = fetchedDidNominate;
+		previousState.didNominate = userNomination !== undefined;
+		previousState.isVotingOpen = votingSystem.votingOpen;
 		previousState.isPowerBadgeUser = isPowerBadgeUser;
 	});
 
@@ -255,6 +357,10 @@ app.frame("/nominate", async (c) => {
 					🎩 TOTH - Nominate 🎩
 				</h1>
 
+				{!isValidCast && (
+					<h1 style={{ color: "red" }}>Invalid cast, try again</h1>
+				)}
+
 				{!state.didNominate && (
 					<div style={{ display: "flex", flexDirection: "column" }}>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
@@ -276,19 +382,22 @@ app.frame("/nominate", async (c) => {
 							justifyContent: "center"
 						}}
 					>
-						<h2 style={{ fontSize: "4rem", color: "#D6FFF6", fontWeight: 400 }}>
-							You nominated @sum
-						</h2>
 						<h2
 							style={{ fontSize: "3.5rem", color: "#D6FFF6", fontWeight: 400 }}
 						>
-							Voting start in 7h:49m
+							You nominated {userNomination?.user}
+						</h2>
+						{/* TODO: add dynamic message below based on times to nominate and voting */}
+						<h2
+							style={{ fontSize: "3.5rem", color: "#D6FFF6", fontWeight: 400 }}
+						>
+							Voting starts every day at 6PM UTC
 						</h2>
 					</div>
 				)}
 			</div>
 		),
-		intents: generateNominateIntents(state.didNominate)
+		intents: generateNominateIntents(state.didNominate, state.isVotingOpen)
 	});
 });
 
