@@ -9,6 +9,7 @@ import { vars } from "../../ui";
 import { firstRun } from "./helpers";
 import { votingSystem } from "./client";
 import { client } from "./fetch";
+import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 
 interface State {
 	didNominate: boolean;
@@ -247,6 +248,103 @@ app.frame("/status", async (c) => {
 	});
 });
 
+app.frame("/vote", async (c) => {
+	// true here means that it will calculate the nominations
+	const nominations = calculateNominations(true);
+
+	const shouldShowNominationMessage =
+		nominations.length === 0 && isNominationRound;
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					justifyContent: "center",
+					textAlign: "center",
+					width: "100%"
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8"
+					}}
+				>
+					🎩 TOTH - Status 🎩
+				</h1>
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						color: "#30E000",
+						justifyContent: "center"
+					}}
+				>
+					{nominations.map((value, index) => (
+						<div
+							key={`${value}-${index}`}
+							style={{
+								display: "flex",
+								flexDirection: "row",
+								color: "#30E000",
+								justifyContent: "space-around",
+								fontSize: "1.1rem"
+							}}
+						>
+							<h1 style={{ color: "white", fontFamily: "Open Sans" }}>
+								{value}
+							</h1>
+						</div>
+					))}
+					{shouldShowNominationMessage && (
+						<div style={{ display: "flex", flexDirection: "column" }}>
+							<h1>Nominations start at 12AM UTC</h1>
+						</div>
+					)}
+					{isVotingOpen && (
+						<div style={{ display: "flex", flexDirection: "column" }}>
+							<h1 style={{ fontSize: "3rem" }}>
+								Voting started. Place your votes
+							</h1>
+						</div>
+					)}
+				</div>
+			</div>
+		),
+		intents: [
+			isNominationRound && (
+				<Button key={"nominate"} action="/nominate" value="nominate">
+					Nominate
+				</Button>
+			),
+			isVotingOpen && (
+				<Button key={"vote"} action="/vote" value="vote">
+					Vote
+				</Button>
+			),
+			<Button key={"winners"} action="/winners" value="winners">
+				Leaderboard
+			</Button>,
+			<Button
+				key={"autosubscribe"}
+				action="/autosubscribe"
+				value="autosubscribe"
+			>
+				Autosubscribe
+			</Button>
+		]
+	});
+});
+
 const generateNominateIntents = (
 	didNominate: boolean,
 	isVotingOpen: boolean
@@ -281,6 +379,13 @@ const generateNominateIntents = (
 app.frame("/nominate", async (c) => {
 	const { frameData, inputText, deriveState, buttonValue } = c;
 
+	const response = await client.fetchBulkUsers([frameData?.fid || 0]);
+
+	// Power badge is indeed in the Users object. Warning should be ignored
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
+	const isPowerBadgeUser = response.users[0].power_badge;
+
 	const fid = frameData?.fid || 0;
 	const today = new Date();
 	const hours = today.getUTCHours();
@@ -301,13 +406,13 @@ app.frame("/nominate", async (c) => {
 	});
 
 	const nominationInput = inputText?.split("/") || [];
-
 	if (isValidCast && nominationInput.length === 2) {
 		if (hours < 18) {
 			votingSystem.nominate({
 				user: nominationInput[0],
 				castId: nominationInput[1],
-				fid: frameData?.fid || 0
+				fid: frameData?.fid || 0,
+				isPowerBadgeUser: true
 			});
 		}
 	}
@@ -317,12 +422,6 @@ app.frame("/nominate", async (c) => {
 	);
 	console.warn(votingSystem.nominations, "nominations");
 	console.warn(userNomination, "userNomination");
-
-	// const response = await client.fetchBulkUsers([frameData?.fid || 0]);
-
-	// Power badge is indeed in the Users object.
-	// const isPowerBadgeUser: boolean = response.users[0].power_badge;
-	const isPowerBadgeUser: boolean = true;
 
 	const state = deriveState((previousState) => {
 		previousState.didNominate = userNomination !== undefined;

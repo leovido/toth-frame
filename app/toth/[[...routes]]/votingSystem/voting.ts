@@ -2,6 +2,7 @@ type Nomination = {
 	user: string;
 	castId: string;
 	fid: number;
+	isPowerBadgeUser: boolean;
 };
 
 export type NominationTOTH = {
@@ -34,37 +35,44 @@ class MockDBService implements IDatabaseService {
 			{
 				user: "sum",
 				castId: "0xn48n323",
-				fid: 123
+				fid: 123,
+				isPowerBadgeUser: true
 			},
 			{
 				user: "edit",
 				castId: "0x34n3y2n",
-				fid: 123
+				fid: 123,
+				isPowerBadgeUser: true
 			},
 			{
 				user: "0xen",
 				castId: "0xn3y4n3",
-				fid: 123
+				fid: 123,
+				isPowerBadgeUser: true
 			},
 			{
 				user: "edit",
 				castId: "0x34n3y2n",
-				fid: 123
+				fid: 123,
+				isPowerBadgeUser: true
 			},
 			{
 				user: "0xen",
 				castId: "0xn3y4n3",
-				fid: 123
+				fid: 123,
+				isPowerBadgeUser: true
 			},
 			{
 				user: "edit",
 				castId: "0x34n3y2n",
-				fid: 123
+				fid: 123,
+				isPowerBadgeUser: true
 			},
 			{
 				user: "0xen",
 				castId: "0xn3y4n3",
-				fid: 123
+				fid: 123,
+				isPowerBadgeUser: true
 			}
 		];
 		return Promise.all(nominations);
@@ -141,7 +149,6 @@ export class NominationAndVotingSystem {
 
 	private startVoting(): void {
 		this.votes = {}; // Reset votes
-		// this.nominationOpen = false;
 		this.votingOpen = true;
 		console.log("Voting has started.");
 	}
