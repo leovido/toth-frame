@@ -296,7 +296,7 @@ app.frame("/check", async (c) => {
 	const { buttonValue, frameData, deriveState, verified } = c;
 	const forceRefresh = buttonValue === "check";
 
-	const isDevEnvironment = process.env.CONFIG === "DEV";
+	// const isDevEnvironment = process.env.CONFIG === "DEV";
 
 	if (!verified) {
 		console.log(`Frame verification failed for ${frameData?.fid}`);
