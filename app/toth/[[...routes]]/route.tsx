@@ -9,7 +9,6 @@ import { vars } from "../../ui";
 import { firstRun } from "./helpers";
 import { votingSystem } from "./client";
 import { client } from "./fetch";
-import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 
 interface State {
 	didNominate: boolean;
