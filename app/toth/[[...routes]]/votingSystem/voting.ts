@@ -27,13 +27,10 @@ export class NominationAndVotingSystem {
 		const hours = now.getUTCHours();
 
 		if (hours > 0 && hours < 18) {
-			// Midnight, start nominations
 			this.startNominations();
 		} else if (hours >= 18) {
-			// 18:00, start voting
 			this.startVoting();
 		} else if (hours === 42 % 24) {
-			// 42 hours from midnight (18:00 next day), end voting
 			this.endVoting();
 		}
 	}
