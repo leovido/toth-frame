@@ -4,6 +4,7 @@
 import { NeynarAPIClient, CastParamType } from "@neynar/nodejs-sdk";
 import { CastWorthModel, DegenCast } from "./types";
 import { channelMap } from "./boostedChannels";
+import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v1";
 
 // Initialize Neynar API client with your API key
 export const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY || "");
@@ -68,9 +69,9 @@ export const castNetworth = async (
 		// Filter and process casts that mention an amount of $DEGEN
 		const degenCasts: DegenCast[] = allCastsInThread.result.casts
 			.filter(
-				(cast) => /(\d+)\s*\$degen/i.test(cast.text) // Regular expression to match the pattern
+				(cast: CastWithInteractions) => /(\d+)\s*\$degen/i.test(cast.text) // Regular expression to match the pattern
 			)
-			.map((cast) => {
+			.map((cast: { text: string; author: { username: string } }) => {
 				const match = cast.text.match(/(\d+)\s*\$degen/i); // Extract the amount
 
 				if (match !== null) {

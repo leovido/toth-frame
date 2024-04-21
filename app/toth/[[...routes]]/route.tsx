@@ -126,11 +126,8 @@ app.frame("/", async (c) => {
 });
 
 app.frame("/status", async (c) => {
-	votingSystem.nominate({
-		user: "sum",
-		castId: "0x349823n"
-	});
-
+	const isNominationRound = votingSystem.nominationOpen;
+	const isVotingOpen = votingSystem.votingOpen;
 	return c.res({
 		image: (
 			<div
@@ -163,12 +160,16 @@ app.frame("/status", async (c) => {
 			</div>
 		),
 		intents: [
-			<Button key={"nominate"} action="/nominate" value="nominate">
-				Nominate
-			</Button>,
-			<Button key={"vote"} action="/vote" value="vote">
-				Vote
-			</Button>,
+			isNominationRound && (
+				<Button key={"nominate"} action="/nominate" value="nominate">
+					Nominate
+				</Button>
+			),
+			!isVotingOpen && (
+				<Button key={"vote"} action="/vote" value="vote">
+					Vote
+				</Button>
+			),
 			<Button key={"winners"} action="/winners" value="winners">
 				Leaderboard
 			</Button>,
@@ -195,10 +196,7 @@ const generateNominateIntents = (didNominate: boolean) => {
 		];
 	} else {
 		return [
-			<TextInput
-				key={"text-input"}
-				placeholder="https://warpcast.com/sum/0x8f3e2c44"
-			/>,
+			<TextInput key={"text-input"} placeholder="sum/0x8f3e2c44" />,
 			<Button key={"nominate"} action="/nominate" value="nominate">
 				Submit
 			</Button>,
@@ -212,21 +210,24 @@ const generateNominateIntents = (didNominate: boolean) => {
 app.frame("/nominate", async (c) => {
 	const { inputText, deriveState, frameData } = c;
 
-	const fetchedDidNominate = false;
+	const nominationInput = inputText?.split("/") || [];
 
-	const response = await client.fetchBulkUsers([frameData?.fid || 0]);
+	votingSystem.nominate({
+		user: nominationInput[0],
+		castId: nominationInput[1]
+	});
+	const fetchedDidNominate = true;
+
+	// const response = await client.fetchBulkUsers([frameData?.fid || 0]);
 
 	// Power badge is indeed in the Users object.
-	const isPowerBadgeUser: boolean = response.users[0].power_badge;
+	// const isPowerBadgeUser: boolean = response.users[0].power_badge;
+	const isPowerBadgeUser: boolean = true;
 
 	const state = deriveState((previousState) => {
 		previousState.didNominate = fetchedDidNominate;
 		previousState.isPowerBadgeUser = isPowerBadgeUser;
 	});
-
-	const parts = inputText?.split("warpcast.com/") || [];
-	const result = parts[1] ? parts[1] : "";
-	console.log(result);
 
 	return c.res({
 		image: (
@@ -261,7 +262,7 @@ app.frame("/nominate", async (c) => {
 							1. Welcome! To nominate, you must be a power badge user
 						</h2>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
-							2. Paste the cast you would like to nominate
+							2. Paste the cast you would like to nominate.
 						</h2>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
 							3. Earn $DEGEN for nominating 4 times a week

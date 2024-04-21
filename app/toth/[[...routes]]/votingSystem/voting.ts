@@ -15,8 +15,8 @@ export interface IDatabaseService {
 export class NominationAndVotingSystem {
 	private nominations: Cast[] = [];
 	private votes: Record<string, number> = {};
-	private nominationOpen: boolean = false;
-	private votingOpen: boolean = false;
+	public nominationOpen: boolean = false;
+	public votingOpen: boolean = false;
 
 	constructor() {
 		this.scheduleEvents();
