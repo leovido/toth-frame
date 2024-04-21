@@ -8,6 +8,9 @@ import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
 import { firstRun } from "./helpers";
 import { client } from "./fetch";
+import { NominationAndVotingSystem } from "./businessLogic/voting";
+
+const votingSystem = new NominationAndVotingSystem();
 
 interface State {
 	didNominate: boolean;
@@ -83,6 +86,48 @@ const app = new Frog<{ State: State }>({
 // export const runtime = 'edge'
 
 app.frame("/", async (c) => {
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					justifyContent: "center",
+					textAlign: "center",
+					width: "100%"
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8"
+					}}
+				>
+					🎩 Tip O&apos; The Hat 🎩
+				</h1>
+				<h2 style={{ fontSize: "3rem", color: "#D6FFF6", fontWeight: 400 }}>
+					Pool tips, Fund awesomeness
+				</h2>
+			</div>
+		),
+		intents: [
+			<Button key={"status"} action="/status" value="status">
+				Status
+			</Button>
+		]
+	});
+});
+
+app.frame("/status", async (c) => {
+	const { frameData } = c;
+
 	return c.res({
 		image: (
 			<div
