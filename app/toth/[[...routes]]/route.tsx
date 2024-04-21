@@ -8,7 +8,7 @@ import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
 import { firstRun } from "./helpers";
 import { client } from "./fetch";
-import { NominationAndVotingSystem } from "./businessLogic/voting";
+import { NominationAndVotingSystem } from "./votingSystem/voting";
 
 const votingSystem = new NominationAndVotingSystem();
 
@@ -126,7 +126,10 @@ app.frame("/", async (c) => {
 });
 
 app.frame("/status", async (c) => {
-	const { frameData } = c;
+	votingSystem.nominate({
+		user: "sum",
+		castId: "0x349823n"
+	});
 
 	return c.res({
 		image: (
