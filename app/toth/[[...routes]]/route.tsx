@@ -11,6 +11,7 @@ import { votingSystem } from "./client";
 import { client } from "./fetch";
 
 interface State {
+	selectedCast: number;
 	didNominate: boolean;
 	isVotingOpen: boolean;
 	totalDegen: number;
@@ -45,6 +46,7 @@ const generateIntents = (fid: number, castIdFid: number) => {
 
 const app = new Frog<{ State: State }>({
 	initialState: {
+		selectedCast: 0,
 		totalDegen: 0,
 		dollarValue: "0",
 		castIdFid: 0,
@@ -124,9 +126,21 @@ app.frame("/", async (c) => {
 	});
 });
 
-const calculateNominations = (isNominationOpen: boolean) => {
+const calculateNominations = (
+	isNominationOpen: boolean
+): {
+	nominations: string[];
+	items: {
+		user: string;
+		castId: string;
+		count: number;
+	}[];
+} => {
 	if (!isNominationOpen) {
-		return [];
+		return {
+			nominations: [],
+			items: []
+		};
 	}
 	const entryMap = new Map();
 
@@ -139,20 +153,26 @@ const calculateNominations = (isNominationOpen: boolean) => {
 		}
 	}
 
-	const nominations = Array.from(entryMap.values())
-		.sort((a, b) => b.count - a.count)
-		.map(
-			(item, index) =>
-				`${index + 1}. ${item.user} - ${item.castId} - ${item.count}`
-		);
+	const sortedItems = Array.from(entryMap.values()).sort(
+		(a, b) => b.count - a.count
+	);
 
-	return nominations;
+	const nominationsString = sortedItems.map(
+		(item, index) =>
+			`${index + 1}. ${item.user} - ${item.castId} - ${item.count}`
+	);
+
+	return {
+		nominations: nominationsString,
+		items: sortedItems
+	};
 };
 
 app.frame("/status", async (c) => {
 	const isNominationRound = votingSystem.nominationOpen;
 	const isVotingOpen = votingSystem.votingOpen;
-	const nominations = calculateNominations(isNominationRound);
+	const { nominations } = calculateNominations(isNominationRound);
+	votingSystem.votes;
 
 	const shouldShowNominationMessage =
 		nominations.length === 0 && isNominationRound;
@@ -248,11 +268,30 @@ app.frame("/status", async (c) => {
 });
 
 app.frame("/vote", async (c) => {
-	// true here means that it will calculate the nominations
-	const nominations = calculateNominations(true);
+	const { deriveState, buttonValue } = c;
+	const { nominations, items } = calculateNominations(true);
 
-	const shouldShowNominationMessage =
-		nominations.length === 0 && isNominationRound;
+	let hasUserVoted = false;
+
+	const state = deriveState((previousState) => {
+		if (buttonValue === "nextCast") {
+			if (previousState.selectedCast === 4) {
+				previousState.selectedCast = 0;
+			} else {
+				previousState.selectedCast++;
+			}
+		}
+		if (buttonValue === "prevCast") {
+			previousState.selectedCast--;
+		}
+	});
+
+	if (buttonValue === "finalVote") {
+		votingSystem.vote(items[state.selectedCast].castId);
+		hasUserVoted = true;
+	}
+
+	const selectedCast = `https://warpcast.com/${items[state.selectedCast].user}/${items[state.selectedCast].castId}`;
 
 	return c.res({
 		image: (
@@ -278,69 +317,82 @@ app.frame("/vote", async (c) => {
 						color: "#38BDF8"
 					}}
 				>
-					🎩 TOTH - Status 🎩
+					🎩 TOTH - Vote 🎩
 				</h1>
-				<div
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						color: "#30E000",
-						justifyContent: "center"
-					}}
-				>
-					{nominations.map((value, index) => (
-						<div
-							key={`${value}-${index}`}
+				{hasUserVoted && (
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							color: "#30E000",
+							justifyContent: "center"
+						}}
+					>
+						<h1
 							style={{
-								display: "flex",
-								flexDirection: "row",
 								color: "#30E000",
-								justifyContent: "space-around",
-								fontSize: "1.1rem"
+								fontFamily: "Open Sans"
 							}}
 						>
-							<h1 style={{ color: "white", fontFamily: "Open Sans" }}>
-								{value}
-							</h1>
-						</div>
-					))}
-					{shouldShowNominationMessage && (
-						<div style={{ display: "flex", flexDirection: "column" }}>
-							<h1>Nominations start at 12AM UTC</h1>
-						</div>
-					)}
-					{isVotingOpen && (
-						<div style={{ display: "flex", flexDirection: "column" }}>
-							<h1 style={{ fontSize: "3rem" }}>
-								Voting started. Place your votes
-							</h1>
-						</div>
-					)}
-				</div>
+							You voted. Thank you.
+						</h1>
+					</div>
+				)}
+				{!hasUserVoted && (
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							color: "#30E000",
+							justifyContent: "center"
+						}}
+					>
+						{nominations.slice(0, 5).map((value, index) => (
+							<div
+								key={`${value}-${index}`}
+								style={{
+									display: "flex",
+									flexDirection: "row",
+									color: "#30E000",
+									justifyContent: "space-around",
+									fontSize: "1.1rem"
+								}}
+							>
+								<h1
+									style={{
+										color: state.selectedCast === index ? "#30E000" : "white",
+										fontFamily: "Open Sans"
+									}}
+								>
+									{value}
+								</h1>
+							</div>
+						))}
+					</div>
+				)}
 			</div>
 		),
-		intents: [
-			isNominationRound && (
-				<Button key={"nominate"} action="/nominate" value="nominate">
-					Nominate
-				</Button>
-			),
-			isVotingOpen && (
-				<Button key={"vote"} action="/vote" value="vote">
-					Vote
-				</Button>
-			),
-			<Button key={"winners"} action="/winners" value="winners">
-				Leaderboard
-			</Button>,
-			<Button
-				key={"autosubscribe"}
-				action="/autosubscribe"
-				value="autosubscribe"
-			>
-				Autosubscribe
-			</Button>
-		]
+		intents: !hasUserVoted
+			? [
+					<Button key={"finalVote"} action="/vote" value="finalVote">
+						Vote
+					</Button>,
+
+					<Button.Redirect key={"redirect-to-cast"} location={selectedCast}>
+						View selected cast
+					</Button.Redirect>,
+					<Button key={"prevCast"} action="/vote" value="prevCast">
+						←
+					</Button>,
+					<Button key={"nextCast"} action="/vote" value="nextCast">
+						→
+					</Button>
+				]
+			: [
+					<Button key={"start"} action="/" value="start">
+						Start
+					</Button>
+				]
 	});
 });
 
@@ -381,8 +433,7 @@ app.frame("/nominate", async (c) => {
 	const response = await client.fetchBulkUsers([frameData?.fid || 0]);
 
 	// Power badge is indeed in the Users object. Warning should be ignored
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
+
 	const isPowerBadgeUser = response.users[0].power_badge;
 
 	const fid = frameData?.fid || 0;

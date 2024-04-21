@@ -13,8 +13,8 @@ export type NominationTOTH = {
 
 type Vote = {
 	nomination: Nomination;
-	fid: number;
 	timestamp: number;
+	count: number;
 };
 
 export interface IDatabaseService {
@@ -30,51 +30,72 @@ class MockDBService implements IDatabaseService {
 	public nominations: Nomination[] = [];
 	public votes: Vote[] = [];
 
+	constructor() {}
+
 	fetchNominations(): Promise<Nomination[]> {
 		const nominations: Nomination[] = [
 			{
 				user: "sum",
-				castId: "0xn48n323",
+				castId: "0x8f3e2c44",
+				fid: 123,
+				isPowerBadgeUser: true
+			},
+			{
+				user: "sum",
+				castId: "0x8f3e2c44",
+				fid: 123,
+				isPowerBadgeUser: true
+			},
+			{
+				user: "sum",
+				castId: "0x8f3e2c44",
 				fid: 123,
 				isPowerBadgeUser: true
 			},
 			{
 				user: "edit",
-				castId: "0x34n3y2n",
+				castId: "0xd87fd8f8",
 				fid: 123,
 				isPowerBadgeUser: true
 			},
 			{
 				user: "0xen",
-				castId: "0xn3y4n3",
+				castId: "0xf02aab72",
 				fid: 123,
 				isPowerBadgeUser: true
 			},
 			{
 				user: "edit",
-				castId: "0x34n3y2n",
+				castId: "0xd87fd8f8",
 				fid: 123,
 				isPowerBadgeUser: true
 			},
 			{
 				user: "0xen",
-				castId: "0xn3y4n3",
+				castId: "0xf02aab72",
 				fid: 123,
 				isPowerBadgeUser: true
 			},
 			{
 				user: "edit",
-				castId: "0x34n3y2n",
+				castId: "0xd87fd8f8",
 				fid: 123,
 				isPowerBadgeUser: true
 			},
 			{
 				user: "0xen",
-				castId: "0xn3y4n3",
+				castId: "0xf02aab72",
 				fid: 123,
 				isPowerBadgeUser: true
 			}
 		];
+		this.votes = nominations.map((nom) => {
+			return {
+				nomination: nom,
+				timestamp: 0,
+				count: 0
+			};
+		});
 		return Promise.all(nominations);
 	}
 	openVoting(): Promise<void> {
@@ -91,18 +112,35 @@ class MockDBService implements IDatabaseService {
 		const nomination: Nomination = {
 			user: user,
 			castId: castId,
-			fid: fid
+			fid: fid,
+			isPowerBadgeUser: true
 		};
 		return Promise.resolve(nomination);
 	}
 
 	recordVote(castId: string): Promise<void> {
-		const findCast = this.votes.find((vote) => {
-			return vote.nomination.castId === castId;
+		let found = false;
+		const updatedVotes = this.votes.map((vote) => {
+			if (vote.nomination.castId === castId) {
+				found = true;
+				return {
+					...vote,
+					timestamp: new Date().getTime(),
+					count: vote.count + 1
+				};
+			}
+			return vote;
 		});
-		if (findCast) {
-			findCast.count += 1;
+
+		if (!found) {
+			updatedVotes.push({
+				nomination: { castId, user: "mock", fid: 0, isPowerBadgeUser: true },
+				timestamp: new Date().getTime(),
+				count: 1
+			});
 		}
+
+		this.votes = updatedVotes;
 		return Promise.resolve();
 	}
 	getVotingResults(): Promise<unknown[]> {
@@ -116,7 +154,7 @@ class MockDBService implements IDatabaseService {
 export class NominationAndVotingSystem {
 	private db: IDatabaseService;
 	public nominations: Nomination[] = [];
-	private votes: Record<string, number> = {};
+	public votes: Record<string, number> = {};
 	public nominationOpen: boolean = false;
 	public votingOpen: boolean = false;
 
@@ -170,11 +208,7 @@ export class NominationAndVotingSystem {
 
 	public vote(castId: string): void {
 		if (this.votingOpen) {
-			if (this.votes[castId]) {
-				this.votes[castId]++;
-			} else {
-				this.votes[castId] = 1;
-			}
+			this.db.recordVote(castId);
 			console.log(`Vote received for: ${castId}`);
 		} else {
 			console.log("Voting is closed.");
