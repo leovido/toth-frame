@@ -18,6 +18,15 @@ Three stages: nomination, voting, distribution.
 
 - autosubscribe real tips, not tip allocations. where casters dedicate a certain amount of degen per day/week/month to go to TOTH. They can set certain criteria for where the tips are, and are not, allowed to go e.g. exclusively to FRAMES, or exclusively to ART. Any TOTH in a category other than that selection would be skipped automatically.
 
+## Variations to test
+
+The frame itself runs on a clock.
+This means that nominations can only happen from 12AM UTC to 6PM UTC. There will be a 6 window gap where nominations cannot happen.
+
+- Nomination window: 12AM-6PM UTC (16 h)
+- Voting: 6PM-6PM UTC next day (24 h)
+- Nomination and voting can happen at the same time. Where nominations will be for the next round and voting for the previous nomination round.
+
 ## Installation
 
 You will need your own Neynar and Airstack API keys. You will need to add them on a new file called `.env`.
