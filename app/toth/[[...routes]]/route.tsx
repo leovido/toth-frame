@@ -9,6 +9,7 @@ import { vars } from "../../ui";
 import { firstRun } from "./helpers";
 import { votingSystem } from "./client";
 import { client } from "./fetch";
+import { dbClient, run } from "@/app/database";
 
 interface State {
 	selectedCast: number;
@@ -159,7 +160,7 @@ const calculateNominations = (
 
 	const nominationsString = sortedItems.map(
 		(item, index) =>
-			`${index + 1}. ${item.user} - ${item.castId} - ${item.count}`
+			`${index + 1}. ${item.username} - ${item.castId} - ${item.weight}`
 	);
 
 	return {
@@ -168,14 +169,8 @@ const calculateNominations = (
 	};
 };
 
-app.frame("/status", async (c) => {
-	const isNominationRound = votingSystem.nominationOpen;
-	const isVotingOpen = votingSystem.votingOpen;
-	const { nominations } = calculateNominations(isNominationRound);
-	votingSystem.votes;
-
-	const shouldShowNominationMessage =
-		nominations.length === 0 && isNominationRound;
+app.frame("/leaderboard", async (c) => {
+	const nominations = votingSystem.nominations;
 
 	return c.res({
 		image: (
@@ -201,7 +196,7 @@ app.frame("/status", async (c) => {
 						color: "#38BDF8"
 					}}
 				>
-					🎩 TOTH - Status 🎩
+					🎩 TOTH - Winners 🎩
 				</h1>
 				<div
 					style={{
@@ -223,6 +218,90 @@ app.frame("/status", async (c) => {
 							}}
 						>
 							<h1 style={{ color: "white", fontFamily: "Open Sans" }}>
+								{value.castId}
+							</h1>
+						</div>
+					))}
+				</div>
+			</div>
+		),
+		intents: [
+			<Button key={"/status"} action="/status" value="status">
+				Back
+			</Button>,
+			<Button
+				key={"autosubscribe"}
+				action="/autosubscribe"
+				value="autosubscribe"
+			>
+				Autosubscribe
+			</Button>
+		]
+	});
+});
+
+app.frame("/status", async (c) => {
+	run().catch(console.dir);
+
+	const isNominationRound = votingSystem.nominationOpen;
+	const isVotingOpen = votingSystem.votingOpen;
+	const { nominations } = calculateNominations(isNominationRound);
+	votingSystem.votes;
+
+	const shouldShowNominationMessage =
+		nominations.length === 0 && isNominationRound;
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100vh",
+					width: "100%"
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8"
+					}}
+				>
+					🎩 TOTH - Status 🎩
+				</h1>
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						color: "#30E000",
+						justifyContent: "center",
+						alignItems: "center",
+						height: "50%"
+					}}
+				>
+					{nominations.map((value, index) => (
+						<div
+							key={`${value}-${index}`}
+							style={{
+								display: "flex",
+								flexDirection: "row",
+								color: "#30E000",
+								fontSize: "1.1rem"
+							}}
+						>
+							<h1
+								style={{
+									color: "white",
+									fontFamily: "Open Sans",
+									marginTop: -4
+								}}
+							>
 								{value}
 							</h1>
 						</div>
@@ -240,6 +319,23 @@ app.frame("/status", async (c) => {
 						</div>
 					)}
 				</div>
+				{isNominationRound && (
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							color: "#30E000",
+							justifySelf: "flex-end",
+
+							alignItems: "center"
+						}}
+					>
+						<h1 style={{ fontSize: "3rem" }}>Nominations are live now</h1>
+						<h1 style={{ fontSize: "1.8rem", marginTop: -16 }}>
+							Voting starts in 5h9m
+						</h1>
+					</div>
+				)}
 			</div>
 		),
 		intents: [
@@ -253,7 +349,7 @@ app.frame("/status", async (c) => {
 					Vote
 				</Button>
 			),
-			<Button key={"winners"} action="/winners" value="winners">
+			<Button key={"leaderboard"} action="/leaderboard" value="leaderboard">
 				Leaderboard
 			</Button>,
 			<Button
@@ -291,7 +387,7 @@ app.frame("/vote", async (c) => {
 		hasUserVoted = true;
 	}
 
-	const selectedCast = `https://warpcast.com/${items[state.selectedCast].user}/${items[state.selectedCast].castId}`;
+	const selectedCast = `https://warpcast.com/${items[state.selectedCast].username}/${items[state.selectedCast].castId}`;
 
 	return c.res({
 		image: (

@@ -1,8 +1,12 @@
+import { dbClient, run } from "@/app/database";
+
 type Nomination = {
-	user: string;
+	id: string;
+	username: string;
 	castId: string;
 	fid: number;
-	isPowerBadgeUser: boolean;
+	timestamp: string;
+	weight: number;
 };
 
 export type NominationTOTH = {
@@ -24,6 +28,81 @@ export interface IDatabaseService {
 	addNomination(user: string, castId: string, fid: number): Promise<Nomination>;
 	recordVote(castId: string): Promise<void>;
 	getVotingResults(): Promise<unknown[]>;
+}
+
+const dbName = "tipothehat";
+const nomCollection = "nominations";
+const voteCollection = "votes";
+
+class MongoDBService implements IDatabaseService {
+	public nominations: Nomination[] = [];
+	public votes: Vote[] = [];
+
+	constructor() {}
+
+	async fetchNominations(): Promise<Nomination[]> {
+		const startToday = new Date();
+		startToday.setUTCHours(0);
+		startToday.setUTCMinutes(0);
+		startToday.setUTCSeconds(0);
+		startToday.setUTCMilliseconds(0);
+
+		const endToday = new Date();
+		endToday.setUTCHours(18);
+		endToday.setUTCMinutes(0);
+		endToday.setUTCSeconds(0);
+		endToday.setUTCMilliseconds(0);
+
+		const _nominations = await dbClient
+			.db(dbName)
+			.collection(nomCollection)
+			.find({
+				timestamp: {
+					$gte: startToday,
+					$lte: endToday
+				}
+			})
+			.sort({
+				weight: -1
+			})
+			.limit(5)
+			.toArray();
+
+		const nominations: Nomination[] = _nominations.map((nom) => {
+			return {
+				username: nom.username,
+				weight: nom.weight,
+				castId: nom.castId,
+				fid: nom.fid,
+				id: nom.id,
+				timestamp: nom.timestamp
+			};
+		});
+
+		this.nominations = nominations;
+
+		return nominations;
+	}
+	openVoting(): Promise<void> {
+		throw new Error("Method not implemented.");
+	}
+	closeVoting(): Promise<void> {
+		throw new Error("Method not implemented.");
+	}
+	addNomination(
+		user: string,
+		castId: string,
+		fid: number
+	): Promise<Nomination> {
+		throw new Error("Method not implemented.");
+	}
+
+	recordVote(castId: string): Promise<void> {
+		throw new Error("Method not implemented.");
+	}
+	getVotingResults(): Promise<unknown[]> {
+		throw new Error("Method not implemented.");
+	}
 }
 
 class MockDBService implements IDatabaseService {
@@ -158,7 +237,7 @@ export class NominationAndVotingSystem {
 	public nominationOpen: boolean = false;
 	public votingOpen: boolean = false;
 
-	constructor(db: IDatabaseService = new MockDBService()) {
+	constructor(db: IDatabaseService = new MongoDBService()) {
 		this.db = db;
 		this.scheduleEvents();
 	}
