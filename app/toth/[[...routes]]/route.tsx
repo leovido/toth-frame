@@ -363,7 +363,13 @@ app.frame("/status", async (c) => {
 						<h1 style={{ fontSize: "3.5rem", marginTop: 24 }}>
 							Nominations are live now
 						</h1>
-						<h1 style={{ fontSize: "2rem", marginTop: -16, color: "#30E000" }}>
+						<h1
+							style={{
+								fontSize: "2rem",
+								marginTop: -16,
+								color: "#30E000"
+							}}
+						>
 							Voting starts in {timeFormattedVoting()}
 						</h1>
 					</div>
@@ -672,7 +678,7 @@ app.frame("/nominate", async (c) => {
 						>
 							You nominated {userNomination?.username}
 						</h2>
-						<h2 style={{ fontSize: "3rem", color: "#30E000", fontWeight: 400 }}>
+						<h2 style={{ fontSize: "3rem", color: "#30E000" }}>
 							Voting starts in {timeFormattedVoting()}
 						</h2>
 					</div>
