@@ -1,6 +1,6 @@
 /** @jsxImportSource frog/jsx */
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Button, Frog, TextInput } from "frog";
 import { devtools } from "frog/dev";
 import { handle } from "frog/next";
@@ -9,7 +9,8 @@ import { vars } from "../../ui";
 import { firstRun } from "./helpers";
 import { votingSystem } from "./client";
 import { client } from "./fetch";
-import { dbClient, run } from "@/app/database";
+import { Nomination } from "./votingSystem/voting";
+import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 
 interface State {
 	selectedCast: number;
@@ -169,6 +170,28 @@ const calculateNominations = (
 	};
 };
 
+const calculateNominationsWithVotes = (
+	isVotingOpen: boolean,
+	nominations: Nomination[]
+) => {
+	if (!isVotingOpen) {
+		return {
+			nominationsWithVotes: [],
+			items: []
+		};
+	}
+
+	const formattedNominations = nominations.map(
+		(item, index) =>
+			`${index + 1}. ${item.username} - ${item.castId} - ${item.votesCount}`
+	);
+
+	return {
+		nominationsWithVotes: formattedNominations,
+		items: nominations
+	};
+};
+
 app.frame("/leaderboard", async (c) => {
 	const nominations = votingSystem.nominations;
 
@@ -241,12 +264,9 @@ app.frame("/leaderboard", async (c) => {
 });
 
 app.frame("/status", async (c) => {
-	run().catch(console.dir);
-
 	const isNominationRound = votingSystem.nominationOpen;
 	const isVotingOpen = votingSystem.votingOpen;
 	const { nominations } = calculateNominations(isNominationRound);
-	votingSystem.votes;
 
 	const shouldShowNominationMessage =
 		nominations.length === 0 && isNominationRound;
@@ -261,6 +281,7 @@ app.frame("/status", async (c) => {
 					backgroundSize: "100% 100%",
 					display: "flex",
 					flexDirection: "column",
+					justifyContent: "space-between",
 					flexWrap: "nowrap",
 					height: "100vh",
 					width: "100%"
@@ -280,11 +301,21 @@ app.frame("/status", async (c) => {
 						display: "flex",
 						flexDirection: "column",
 						color: "#30E000",
-						justifyContent: "center",
-						alignItems: "center",
-						height: "50%"
+						justifySelf: "center",
+						alignItems: "center"
 					}}
 				>
+					{!isNominationRound && (
+						<h1
+							style={{
+								color: "white",
+								fontFamily: "Open Sans"
+							}}
+						>
+							Nominations will start in {timeFormattedNomination()}
+						</h1>
+					)}
+
 					{nominations.map((value, index) => (
 						<div
 							key={`${value}-${index}`}
@@ -292,14 +323,14 @@ app.frame("/status", async (c) => {
 								display: "flex",
 								flexDirection: "row",
 								color: "#30E000",
-								fontSize: "1.1rem"
+								fontSize: "1.1rem",
+								height: 60
 							}}
 						>
 							<h1
 								style={{
 									color: "white",
-									fontFamily: "Open Sans",
-									marginTop: -4
+									fontFamily: "Open Sans"
 								}}
 							>
 								{value}
@@ -308,7 +339,7 @@ app.frame("/status", async (c) => {
 					))}
 					{shouldShowNominationMessage && (
 						<div style={{ display: "flex", flexDirection: "column" }}>
-							<h1>Nominations start at 12AM UTC</h1>
+							<h1 style={{ color: "white" }}>No nominations</h1>
 						</div>
 					)}
 					{isVotingOpen && (
@@ -325,14 +356,15 @@ app.frame("/status", async (c) => {
 							display: "flex",
 							flexDirection: "column",
 							color: "#30E000",
-							justifySelf: "flex-end",
-
+							justifyContent: "flex-end",
 							alignItems: "center"
 						}}
 					>
-						<h1 style={{ fontSize: "3rem" }}>Nominations are live now</h1>
-						<h1 style={{ fontSize: "1.8rem", marginTop: -16 }}>
-							Voting starts in 5h9m
+						<h1 style={{ fontSize: "3.5rem", marginTop: 24 }}>
+							Nominations are live now
+						</h1>
+						<h1 style={{ fontSize: "2rem", marginTop: -16, color: "#30E000" }}>
+							Voting starts in {timeFormattedVoting()}
 						</h1>
 					</div>
 				)}
@@ -364,9 +396,14 @@ app.frame("/status", async (c) => {
 });
 
 app.frame("/vote", async (c) => {
-	const { deriveState, buttonValue } = c;
-	const { nominations, items } = calculateNominations(true);
+	const { deriveState, buttonValue, frameData } = c;
+	const nominations = votingSystem.nominations;
+	const { nominationsWithVotes, items } = calculateNominationsWithVotes(
+		true,
+		nominations
+	);
 
+	const fid = frameData?.fid || 0;
 	let hasUserVoted = false;
 
 	const state = deriveState((previousState) => {
@@ -383,7 +420,8 @@ app.frame("/vote", async (c) => {
 	});
 
 	if (buttonValue === "finalVote") {
-		votingSystem.vote(items[state.selectedCast].castId);
+		console.warn(items[state.selectedCast], "her!");
+		votingSystem.vote(items[state.selectedCast].id, fid);
 		hasUserVoted = true;
 	}
 
@@ -443,7 +481,7 @@ app.frame("/vote", async (c) => {
 							justifyContent: "center"
 						}}
 					>
-						{nominations.slice(0, 5).map((value, index) => (
+						{nominationsWithVotes.map((value, index) => (
 							<div
 								key={`${value}-${index}`}
 								style={{
@@ -498,8 +536,8 @@ const generateNominateIntents = (
 ) => {
 	if (didNominate) {
 		return [
-			<Button key={"start"} action="/" value="start">
-				Start
+			<Button key={"back"} action="/status" value="status">
+				Back
 			</Button>,
 			isVotingOpen && (
 				<Button key={"vote"} action="/vote" value="vote">
@@ -528,8 +566,6 @@ app.frame("/nominate", async (c) => {
 
 	const response = await client.fetchBulkUsers([frameData?.fid || 0]);
 
-	// Power badge is indeed in the Users object. Warning should be ignored
-
 	const isPowerBadgeUser = response.users[0].power_badge;
 
 	const fid = frameData?.fid || 0;
@@ -554,20 +590,21 @@ app.frame("/nominate", async (c) => {
 	const nominationInput = inputText?.split("/") || [];
 	if (isValidCast && nominationInput.length === 2) {
 		if (hours < 18) {
-			votingSystem.nominate({
-				user: nominationInput[0],
+			const today = new Date().toISOString();
+			const nomination = {
+				username: nominationInput[0],
 				castId: nominationInput[1],
 				fid: frameData?.fid || 0,
-				isPowerBadgeUser: true
-			});
+				createdAt: today,
+				weight: isPowerBadgeUser ? 3 : 1
+			};
+			await votingSystem.nominate(nomination);
 		}
 	}
 
 	const userNomination = votingSystem.nominations.find(
 		(nom) => nom.fid === fid
 	);
-	console.warn(votingSystem.nominations, "nominations");
-	console.warn(userNomination, "userNomination");
 
 	const state = deriveState((previousState) => {
 		previousState.didNominate = userNomination !== undefined;
@@ -628,15 +665,16 @@ app.frame("/nominate", async (c) => {
 						}}
 					>
 						<h2
-							style={{ fontSize: "3.5rem", color: "#D6FFF6", fontWeight: 400 }}
+							style={{
+								fontSize: "3.5rem",
+								color: "#D6FFF6",
+								fontWeight: 400
+							}}
 						>
-							You nominated {userNomination?.user}
+							You nominated {userNomination?.username}
 						</h2>
-						{/* TODO: add dynamic message below based on times to nominate and voting */}
-						<h2
-							style={{ fontSize: "3.5rem", color: "#D6FFF6", fontWeight: 400 }}
-						>
-							Voting starts every day at 6PM UTC
+						<h2 style={{ fontSize: "3rem", color: "#30E000", fontWeight: 400 }}>
+							Voting starts in {timeFormattedVoting()}
 						</h2>
 					</div>
 				)}

@@ -1,12 +1,13 @@
-import { dbClient, run } from "@/app/database";
+import { randomUUID } from "crypto";
 
-type Nomination = {
+export type Nomination = {
 	id: string;
 	username: string;
 	castId: string;
 	fid: number;
-	timestamp: string;
+	createdAt: string;
 	weight: number;
+	votesCount?: number;
 };
 
 export type NominationTOTH = {
@@ -16,23 +17,20 @@ export type NominationTOTH = {
 };
 
 type Vote = {
-	nomination: Nomination;
-	timestamp: number;
-	count: number;
+	nominationId: string;
+	createdAt: string;
+	fid: number;
+	id: string;
 };
 
 export interface IDatabaseService {
 	fetchNominations(): Promise<Nomination[]>;
 	openVoting(): Promise<void>;
 	closeVoting(): Promise<void>;
-	addNomination(user: string, castId: string, fid: number): Promise<Nomination>;
-	recordVote(castId: string): Promise<void>;
+	addNomination(data: Omit<Nomination, "id">): Promise<Nomination>;
+	recordVote(nominationId: string, fid: number): Promise<void>;
 	getVotingResults(): Promise<unknown[]>;
 }
-
-const dbName = "tipothehat";
-const nomCollection = "nominations";
-const voteCollection = "votes";
 
 class MongoDBService implements IDatabaseService {
 	public nominations: Nomination[] = [];
@@ -41,41 +39,27 @@ class MongoDBService implements IDatabaseService {
 	constructor() {}
 
 	async fetchNominations(): Promise<Nomination[]> {
-		const startToday = new Date();
-		startToday.setUTCHours(0);
-		startToday.setUTCMinutes(0);
-		startToday.setUTCSeconds(0);
-		startToday.setUTCMilliseconds(0);
-
-		const endToday = new Date();
-		endToday.setUTCHours(18);
-		endToday.setUTCMinutes(0);
-		endToday.setUTCSeconds(0);
-		endToday.setUTCMilliseconds(0);
-
-		const _nominations = await dbClient
-			.db(dbName)
-			.collection(nomCollection)
-			.find({
-				timestamp: {
-					$gte: startToday,
-					$lte: endToday
+		const fetchResponse = await fetch(
+			`${process.env.TOTH_API}/nominations` || "",
+			{
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
 				}
-			})
-			.sort({
-				weight: -1
-			})
-			.limit(5)
-			.toArray();
+			}
+		);
 
-		const nominations: Nomination[] = _nominations.map((nom) => {
+		const json: Nomination[] = await fetchResponse.json();
+
+		const nominations: Nomination[] = json.map((nom) => {
 			return {
 				username: nom.username,
 				weight: nom.weight,
 				castId: nom.castId,
 				fid: nom.fid,
 				id: nom.id,
-				timestamp: nom.timestamp
+				createdAt: nom.createdAt,
+				votesCount: nom.votesCount
 			};
 		});
 
@@ -83,22 +67,49 @@ class MongoDBService implements IDatabaseService {
 
 		return nominations;
 	}
+
 	openVoting(): Promise<void> {
 		throw new Error("Method not implemented.");
 	}
 	closeVoting(): Promise<void> {
 		throw new Error("Method not implemented.");
 	}
-	addNomination(
-		user: string,
-		castId: string,
-		fid: number
-	): Promise<Nomination> {
-		throw new Error("Method not implemented.");
+	async addNomination(data: Omit<Nomination, "id">): Promise<Nomination> {
+		const nomination = {
+			...data,
+			id: randomUUID()
+		};
+		const response = await fetch(`${process.env.TOTH_API}/nominations` || "", {
+			method: "POST",
+			body: JSON.stringify(nomination),
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}).catch((e) => {
+			console.error(e, "error add nomination");
+		});
+
+		console.warn(response, "here!");
+		return Promise.resolve(nomination);
 	}
 
-	recordVote(castId: string): Promise<void> {
-		throw new Error("Method not implemented.");
+	async recordVote(nominationId: string, fid: number): Promise<void> {
+		const data: Vote = {
+			nominationId,
+			createdAt: new Date().toISOString(),
+			fid,
+			id: "506ec866-883e-4d85-93d1-e83b36e1c01d"
+		};
+		const fetchResponse = await fetch(`${process.env.TOTH_API}/votes` || "", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json" // Set the content type to application/json
+			},
+			body: JSON.stringify(data)
+		});
+		const json = await fetchResponse.json();
+
+		return Promise.resolve(json);
 	}
 	getVotingResults(): Promise<unknown[]> {
 		throw new Error("Method not implemented.");
@@ -171,7 +182,7 @@ class MockDBService implements IDatabaseService {
 		this.votes = nominations.map((nom) => {
 			return {
 				nomination: nom,
-				timestamp: 0,
+				createdAt: 0,
 				count: 0
 			};
 		});
@@ -197,14 +208,14 @@ class MockDBService implements IDatabaseService {
 		return Promise.resolve(nomination);
 	}
 
-	recordVote(castId: string): Promise<void> {
+	recordVote(nominationId: string, fid: number): Promise<void> {
 		let found = false;
 		const updatedVotes = this.votes.map((vote) => {
 			if (vote.nomination.castId === castId) {
 				found = true;
 				return {
 					...vote,
-					timestamp: new Date().getTime(),
+					createdAt: new Date().getTime(),
 					count: vote.count + 1
 				};
 			}
@@ -214,7 +225,7 @@ class MockDBService implements IDatabaseService {
 		if (!found) {
 			updatedVotes.push({
 				nomination: { castId, user: "mock", fid: 0, isPowerBadgeUser: true },
-				timestamp: new Date().getTime(),
+				createdAt: new Date().getTime(),
 				count: 1
 			});
 		}
@@ -248,9 +259,9 @@ export class NominationAndVotingSystem {
 
 		this.nominations = await this.db.fetchNominations();
 
-		if (hours > 0 && hours < 18) {
+		if (hours > 0 && hours < 15) {
 			this.startNominations();
-		} else if (hours >= 18) {
+		} else if (hours >= 15) {
 			this.startVoting();
 			this.nominationOpen = false;
 		} else if (hours === 42 % 24) {
@@ -276,19 +287,20 @@ export class NominationAndVotingSystem {
 		this.displayResults();
 	}
 
-	public nominate(cast: Nomination): void {
+	public async nominate(data: Omit<Nomination, "id">) {
 		if (this.nominationOpen) {
-			this.nominations.push(cast);
-			console.log(`Nomination received: ${cast.user}/${cast.castId}`);
+			const nomination = await this.db.addNomination(data);
+			this.nominations.push(nomination);
+			console.log(`Nomination received: ${data.username}/${data.castId}`);
 		} else {
 			console.log("Nominations are closed.");
 		}
 	}
 
-	public vote(castId: string): void {
+	public vote(nominationId: string, fid: number): void {
 		if (this.votingOpen) {
-			this.db.recordVote(castId);
-			console.log(`Vote received for: ${castId}`);
+			this.db.recordVote(nominationId, fid);
+			console.log(`Vote received for: ${nominationId} by ${fid}`);
 		} else {
 			console.log("Voting is closed.");
 		}
