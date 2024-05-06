@@ -89,7 +89,6 @@ class MongoDBService implements IDatabaseService {
 			console.error(e, "error add nomination");
 		});
 
-		console.warn(response, "here!");
 		return Promise.resolve(nomination);
 	}
 
@@ -259,9 +258,9 @@ export class NominationAndVotingSystem {
 
 		this.nominations = await this.db.fetchNominations();
 
-		if (hours > 0 && hours < 15) {
+		if (hours > 0 && hours < 18) {
 			this.startNominations();
-		} else if (hours >= 15) {
+		} else if (hours >= 18) {
 			this.startVoting();
 			this.nominationOpen = false;
 		} else if (hours === 42 % 24) {

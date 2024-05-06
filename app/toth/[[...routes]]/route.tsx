@@ -1,6 +1,6 @@
 /** @jsxImportSource frog/jsx */
 
-import React, { useMemo } from "react";
+import React from "react";
 import { Button, Frog, TextInput } from "frog";
 import { devtools } from "frog/dev";
 import { handle } from "frog/next";
@@ -420,7 +420,6 @@ app.frame("/vote", async (c) => {
 	});
 
 	if (buttonValue === "finalVote") {
-		console.warn(items[state.selectedCast], "her!");
 		votingSystem.vote(items[state.selectedCast].id, fid);
 		hasUserVoted = true;
 	}
