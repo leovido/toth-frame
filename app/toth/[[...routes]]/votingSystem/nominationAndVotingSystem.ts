@@ -4,7 +4,6 @@ import { Nomination } from "./types";
 
 export class NominationAndVotingSystem {
 	private db: IDatabaseService;
-	public nominations: Nomination[] = [];
 	public votes: Record<string, number> = {};
 	public nominationOpen: boolean = false;
 	public votingOpen: boolean = false;
@@ -17,8 +16,6 @@ export class NominationAndVotingSystem {
 	private async scheduleEvents(): Promise<void> {
 		const now = new Date();
 		const hours = now.getUTCHours();
-
-		this.nominations = await this.db.fetchNominations();
 
 		if (hours > 0 && hours < 18) {
 			this.startNominations();
@@ -50,8 +47,7 @@ export class NominationAndVotingSystem {
 
 	public async nominate(data: Omit<Nomination, "id">) {
 		if (this.nominationOpen) {
-			const nomination = await this.db.addNomination(data);
-			this.nominations.push(nomination);
+			await this.db.addNomination(data);
 			console.log(`Nomination received: ${data.username}/${data.castId}`);
 		} else {
 			console.log("Nominations are closed.");
@@ -64,6 +60,17 @@ export class NominationAndVotingSystem {
 			console.log(`Vote received for: ${nominationId} by ${fid}`);
 		} else {
 			console.log("Voting is closed.");
+		}
+	}
+
+	public async fetchNominations() {
+		try {
+			const nominations = await this.db.fetchNominations();
+
+			return nominations;
+		} catch (error) {
+			console.error(error);
+			throw error;
 		}
 	}
 

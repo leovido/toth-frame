@@ -128,45 +128,14 @@ app.frame("/", async (c) => {
 	});
 });
 
-const calculateNominations = (
-	isNominationOpen: boolean
-): {
-	nominations: string[];
-	items: {
-		user: string;
-		castId: string;
-		count: number;
-	}[];
-} => {
-	if (!isNominationOpen) {
-		return {
-			nominations: [],
-			items: []
-		};
-	}
-	const entryMap = new Map();
-
-	for (const entry of votingSystem.nominations) {
-		if (entryMap.has(entry.castId)) {
-			const existingEntry = entryMap.get(entry.castId);
-			entryMap.set(entry.castId, { ...entry, count: existingEntry.count + 1 });
-		} else {
-			entryMap.set(entry.castId, { ...entry, count: 1 });
-		}
-	}
-
-	const sortedItems = Array.from(entryMap.values()).sort(
-		(a, b) => b.count - a.count
-	);
-
-	const nominationsString = sortedItems.map(
+const calculateNominations = (nominations: Nomination[]) => {
+	const formattedNominations = nominations.map(
 		(item, index) =>
 			`${index + 1}. ${item.username} - ${item.castId} - ${item.weight}`
 	);
 
 	return {
-		nominations: nominationsString,
-		items: sortedItems
+		formattedNominations
 	};
 };
 
@@ -182,7 +151,7 @@ const formattedNominations = (nominations: Nomination[]) => {
 };
 
 app.frame("/leaderboard", async (c) => {
-	const nominations = votingSystem.nominations;
+	const nominations = await votingSystem.fetchNominations();
 
 	return c.res({
 		image: (
@@ -255,7 +224,9 @@ app.frame("/leaderboard", async (c) => {
 app.frame("/status", async (c) => {
 	const isNominationRound = votingSystem.nominationOpen;
 	const isVotingOpen = votingSystem.votingOpen;
-	const { nominations } = calculateNominations(isNominationRound);
+	const _nominations = await votingSystem.fetchNominations();
+	const { formattedNominations: nominations } =
+		calculateNominations(_nominations);
 
 	const shouldShowNominationMessage =
 		nominations.length === 0 && isNominationRound;
@@ -392,7 +363,7 @@ app.frame("/status", async (c) => {
 
 app.frame("/vote", async (c) => {
 	const { deriveState, buttonValue, frameData } = c;
-	const nominations = votingSystem.nominations;
+	const nominations = await votingSystem.fetchNominations();
 	const { formatted: nominationsWithVotes } = formattedNominations(nominations);
 
 	const fid = frameData?.fid || 0;
