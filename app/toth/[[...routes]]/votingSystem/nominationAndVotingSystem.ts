@@ -1,5 +1,5 @@
 import { MongoDBService } from "./implementation/MongoDBService";
-import { IDatabaseService } from "./voting";
+import { IDatabaseService } from "./interface/voting";
 import { Nomination } from "./types";
 
 export class NominationAndVotingSystem {
@@ -58,12 +58,23 @@ export class NominationAndVotingSystem {
 		}
 	}
 
-	public vote(nominationId: string, fid: number): void {
+	public async vote(nominationId: string, fid: number) {
 		if (this.votingOpen) {
-			this.db.recordVote(nominationId, fid);
+			await this.db.recordVote(nominationId, fid);
 			console.log(`Vote received for: ${nominationId} by ${fid}`);
 		} else {
 			console.log("Voting is closed.");
+		}
+	}
+
+	public async getVoteResults(fid: number) {
+		try {
+			const votes = await this.db.getVotingResults(fid);
+
+			return votes;
+		} catch (error) {
+			console.error(error);
+			throw error;
 		}
 	}
 

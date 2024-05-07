@@ -170,25 +170,14 @@ const calculateNominations = (
 	};
 };
 
-const calculateNominationsWithVotes = (
-	isVotingOpen: boolean,
-	nominations: Nomination[]
-) => {
-	if (!isVotingOpen) {
-		return {
-			nominationsWithVotes: [],
-			items: []
-		};
-	}
-
-	const formattedNominations = nominations.map(
+const formattedNominations = (nominations: Nomination[]) => {
+	const formatted = nominations.map(
 		(item, index) =>
 			`${index + 1}. ${item.username} - ${item.castId} - ${item.votesCount}`
 	);
 
 	return {
-		nominationsWithVotes: formattedNominations,
-		items: nominations
+		formatted
 	};
 };
 
@@ -404,13 +393,12 @@ app.frame("/status", async (c) => {
 app.frame("/vote", async (c) => {
 	const { deriveState, buttonValue, frameData } = c;
 	const nominations = votingSystem.nominations;
-	const { nominationsWithVotes, items } = calculateNominationsWithVotes(
-		true,
-		nominations
-	);
+	const { formatted: nominationsWithVotes } = formattedNominations(nominations);
 
 	const fid = frameData?.fid || 0;
-	let hasUserVoted = false;
+	const vote = await votingSystem.getVoteResults(fid);
+
+	const hasUserVoted = vote ? true : false;
 
 	const state = deriveState((previousState) => {
 		if (buttonValue === "nextCast") {
@@ -426,11 +414,10 @@ app.frame("/vote", async (c) => {
 	});
 
 	if (buttonValue === "finalVote") {
-		votingSystem.vote(items[state.selectedCast].id, fid);
-		hasUserVoted = true;
+		votingSystem.vote(nominations[state.selectedCast].id, fid);
 	}
 
-	const selectedCast = `https://warpcast.com/${items[state.selectedCast].username}/${items[state.selectedCast].castId}`;
+	const selectedCast = `https://warpcast.com/${nominations[state.selectedCast].username}/${nominations[state.selectedCast].castId}`;
 
 	return c.res({
 		image: (
@@ -556,7 +543,7 @@ const generateNominateIntents = (
 	} else {
 		return [
 			<TextInput key={"text-input"} placeholder="sum/0x8f3e2c44" />,
-			<Button key={"nominate"} action="/nominate" value="nominate">
+			<Button key={"nominate"} action="/nominate" value="nominateConfirm">
 				Submit
 			</Button>,
 			<Button key={"back"} action="/" value="back">
@@ -573,7 +560,6 @@ app.frame("/nominate", async (c) => {
 
 	const isPowerBadgeUser = response.users[0].power_badge;
 
-	const fid = frameData?.fid || 0;
 	const today = new Date();
 	const hours = today.getUTCHours();
 
@@ -586,11 +572,12 @@ app.frame("/nominate", async (c) => {
 		}
 	};
 
-	let isValidCast: boolean = true;
-	await client.lookUpCastByHashOrWarpcastUrl(castURL(), "url").catch((e) => {
-		console.error(e);
-		isValidCast = false || buttonValue === "nominate";
-	});
+	let isValidCast: boolean = false;
+	castURL() !== "" &&
+		(await client.lookUpCastByHashOrWarpcastUrl(castURL(), "url").catch((e) => {
+			console.error(e);
+			isValidCast = false || buttonValue === "nominate";
+		}));
 
 	const nominationInput = inputText?.split("/") || [];
 	if (isValidCast && nominationInput.length === 2) {
@@ -608,7 +595,7 @@ app.frame("/nominate", async (c) => {
 	}
 
 	const userNomination = votingSystem.nominations.find(
-		(nom) => nom.fid === fid
+		(nom) => nom.fid === 123
 	);
 
 	const state = deriveState((previousState) => {
@@ -644,17 +631,18 @@ app.frame("/nominate", async (c) => {
 					🎩 TOTH - Nominate 🎩
 				</h1>
 
-				{!isValidCast && (
+				{!isValidCast && buttonValue === "nominateConfirm" && (
 					<h1 style={{ color: "red" }}>Invalid cast, try again</h1>
 				)}
 
 				{!state.didNominate && (
 					<div style={{ display: "flex", flexDirection: "column" }}>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
-							1. Welcome! To nominate, you must be a power badge user
+							1. Welcome! ⚡️ users get 3x points on nomination and normal users
+							1x
 						</h2>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
-							2. Paste the cast you would like to nominate.
+							2. Paste the cast you&apos;d like to nominate: user/castId
 						</h2>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
 							3. Earn $DEGEN for nominating 4 times a week

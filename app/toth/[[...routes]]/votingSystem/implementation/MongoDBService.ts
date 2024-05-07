@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { IDatabaseService } from "../voting";
+import { IDatabaseService } from "../interface/voting";
 import { Nomination, Vote } from "../types";
 
 export class MongoDBService implements IDatabaseService {
@@ -73,7 +73,7 @@ export class MongoDBService implements IDatabaseService {
 		const fetchResponse = await fetch(`${process.env.TOTH_API}/votes` || "", {
 			method: "POST",
 			headers: {
-				"Content-Type": "application/json" // Set the content type to application/json
+				"Content-Type": "application/json"
 			},
 			body: JSON.stringify(data)
 		});
@@ -81,7 +81,32 @@ export class MongoDBService implements IDatabaseService {
 
 		return Promise.resolve(json);
 	}
-	getVotingResults(): Promise<unknown[]> {
-		throw new Error("Method not implemented.");
+
+	async getVotingResults(fid: number) {
+		const apiUrl = process.env.TOTH_API
+			? `${process.env.TOTH_API}/votes`
+			: "https://default-api-url/votes";
+
+		try {
+			const fetchResponse = await fetch(apiUrl, {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			});
+
+			if (!fetchResponse.ok) {
+				throw new Error(`Failed to fetch results: ${fetchResponse.status}`);
+			}
+
+			const json: Vote[] = await fetchResponse.json();
+			const userVote = json.find((vote) => {
+				return vote.fid === fid;
+			});
+			return userVote;
+		} catch (error) {
+			console.error("Error fetching voting results:", error);
+			throw error;
+		}
 	}
 }
