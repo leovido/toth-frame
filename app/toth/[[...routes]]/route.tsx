@@ -9,7 +9,7 @@ import { vars } from "../../ui";
 import { firstRun } from "./helpers";
 import { votingSystem } from "./client";
 import { client } from "./fetch";
-import { Nomination } from "./votingSystem/voting";
+import { Nomination } from "./votingSystem/types";
 import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 
 interface State {

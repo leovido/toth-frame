@@ -1,5 +1,6 @@
 import { MongoDBService } from "./implementation/MongoDBService";
-import { IDatabaseService, Nomination } from "./voting";
+import { IDatabaseService } from "./voting";
+import { Nomination } from "./types";
 
 export class NominationAndVotingSystem {
 	private db: IDatabaseService;

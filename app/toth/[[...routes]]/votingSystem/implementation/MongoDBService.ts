@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
-import { IDatabaseService, Nomination, Vote } from "../voting";
+import { IDatabaseService } from "../voting";
+import { Nomination, Vote } from "../types";
 
 export class MongoDBService implements IDatabaseService {
 	public nominations: Nomination[] = [];
