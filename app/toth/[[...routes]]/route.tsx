@@ -607,7 +607,7 @@ app.frame("/nominate", async (c) => {
 							1x
 						</h2>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
-							2. Paste the cast you&apos;d like to nominate: user/castId
+							2. Paste the Warpcast URL of the cast you&apos;d like to nominate
 						</h2>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
 							3. Earn $DEGEN for nominating 4 times a week
@@ -818,7 +818,7 @@ const generateNominateIntents = (
 		];
 	} else {
 		return [
-			<TextInput key={"text-input"} placeholder="sum/0x8f3e2c44" />,
+			<TextInput key={"text-input"} placeholder="Warpcast URL of the cast" />,
 			<Button key={"nominate"} action="/nominate" value="nominateConfirm">
 				Submit
 			</Button>,
