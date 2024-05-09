@@ -120,7 +120,6 @@ app.frame("/leaderboard", async (c) => {
 					flexDirection: "column",
 					flexWrap: "nowrap",
 					height: "100%",
-					justifyContent: "center",
 					textAlign: "center",
 					width: "100%"
 				}}
