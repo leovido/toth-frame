@@ -23,29 +23,6 @@ interface State {
 	isPowerBadgeUser: boolean;
 }
 
-const generateIntents = (fid: number, castIdFid: number) => {
-	console.warn(fid, castIdFid);
-	if (fid === castIdFid) {
-		return [
-			<Button key={"check"} action="/check" value="check">
-				Refresh
-			</Button>,
-			<Button key={"split"} action="/split" value="split">
-				Split
-			</Button>
-		];
-	} else {
-		return [
-			<Button key={"check"} action="/check" value="check">
-				Refresh
-			</Button>,
-			<Button key={"start"} action="/" value="start">
-				Start
-			</Button>
-		];
-	}
-};
-
 const app = new Frog<{ State: State }>({
 	initialState: {
 		selectedCast: 0,
@@ -128,30 +105,8 @@ app.frame("/", async (c) => {
 	});
 });
 
-const calculateNominations = (nominations: Nomination[]) => {
-	const formattedNominations = nominations.map(
-		(item, index) =>
-			`${index + 1}. ${item.username} - ${item.castId} - ${item.weight}`
-	);
-
-	return {
-		formattedNominations
-	};
-};
-
-const formattedNominations = (nominations: Nomination[]) => {
-	const formatted = nominations.map(
-		(item, index) =>
-			`${index + 1}. ${item.username} - ${item.castId} - ${item.votesCount}`
-	);
-
-	return {
-		formatted
-	};
-};
-
 app.frame("/leaderboard", async (c) => {
-	const nominations = await votingSystem.fetchNominations();
+	const nominations = await votingSystem.nominations;
 
 	return c.res({
 		image: (
@@ -224,7 +179,7 @@ app.frame("/leaderboard", async (c) => {
 app.frame("/status", async (c) => {
 	const isNominationRound = votingSystem.nominationOpen;
 	const isVotingOpen = votingSystem.votingOpen;
-	const _nominations = await votingSystem.fetchNominations();
+	const _nominations = await votingSystem.nominations;
 	const { formattedNominations: nominations } =
 		calculateNominations(_nominations);
 
@@ -330,7 +285,7 @@ app.frame("/status", async (c) => {
 								color: "#30E000"
 							}}
 						>
-							Voting starts in {timeFormattedVoting()}
+							Round 1 / Voting starts in {timeFormattedVoting()}
 						</h1>
 					</div>
 				)}
@@ -361,9 +316,79 @@ app.frame("/status", async (c) => {
 	});
 });
 
+app.frame("/history", async (c) => {
+	const isNominationRound = votingSystem.nominationOpen;
+	const nominations = await votingSystem.nominations;
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100vh",
+					width: "100%"
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8"
+					}}
+				>
+					🎩 TOTH - History 🎩
+				</h1>
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						color: "#30E000",
+						justifySelf: "center",
+						alignItems: "center"
+					}}
+				>
+					{nominations.map((item, index) => (
+						<div
+							key={`${item}-${index}`}
+							style={{
+								display: "flex",
+								flexDirection: "row",
+								color: "#30E000",
+								fontSize: "1.1rem"
+							}}
+						>
+							<h1
+								style={{
+									color: "white",
+									fontFamily: "Open Sans"
+								}}
+							>
+								{index + 1}. {item.username} - {item.castId}
+							</h1>
+						</div>
+					))}
+				</div>
+			</div>
+		),
+		intents: [
+			isNominationRound && (
+				<Button key={"back"} action="/status" value="back">
+					Back
+				</Button>
+			)
+		]
+	});
+});
+
 app.frame("/vote", async (c) => {
 	const { deriveState, buttonValue, frameData } = c;
-	const nominations = await votingSystem.fetchNominations();
+	const nominations = await votingSystem.nominations;
 	const { formatted: nominationsWithVotes } = formattedNominations(nominations);
 
 	const fid = frameData?.fid || 0;
@@ -493,41 +518,12 @@ app.frame("/vote", async (c) => {
 	});
 });
 
-const generateNominateIntents = (
-	didNominate: boolean,
-	isVotingOpen: boolean
-) => {
-	if (didNominate) {
-		return [
-			<Button key={"back"} action="/status" value="status">
-				Back
-			</Button>,
-			isVotingOpen && (
-				<Button key={"vote"} action="/vote" value="vote">
-					Vote
-				</Button>
-			),
-			<Button key={"history"} action="/history" value="history">
-				History
-			</Button>
-		];
-	} else {
-		return [
-			<TextInput key={"text-input"} placeholder="sum/0x8f3e2c44" />,
-			<Button key={"nominate"} action="/nominate" value="nominateConfirm">
-				Submit
-			</Button>,
-			<Button key={"back"} action="/" value="back">
-				Back
-			</Button>
-		];
-	}
-};
-
 app.frame("/nominate", async (c) => {
 	const { frameData, inputText, deriveState, buttonValue } = c;
 
+	const fid = frameData?.fid ?? 0;
 	const response = await client.fetchBulkUsers([frameData?.fid || 0]);
+	const nominations = await votingSystem.nominations;
 
 	const isPowerBadgeUser = response.users[0].power_badge;
 
@@ -543,7 +539,7 @@ app.frame("/nominate", async (c) => {
 		}
 	};
 
-	let isValidCast: boolean = false;
+	let isValidCast: boolean = true;
 	castURL() !== "" &&
 		(await client.lookUpCastByHashOrWarpcastUrl(castURL(), "url").catch((e) => {
 			console.error(e);
@@ -557,7 +553,7 @@ app.frame("/nominate", async (c) => {
 			const nomination = {
 				username: nominationInput[0],
 				castId: nominationInput[1],
-				fid: frameData?.fid || 0,
+				fid: fid,
 				createdAt: today,
 				weight: isPowerBadgeUser ? 3 : 1
 			};
@@ -565,9 +561,7 @@ app.frame("/nominate", async (c) => {
 		}
 	}
 
-	const userNomination = votingSystem.nominations.find(
-		(nom) => nom.fid === 123
-	);
+	const userNomination = nominations.find((nom) => nom.fid === fid);
 
 	const state = deriveState((previousState) => {
 		previousState.didNominate = userNomination !== undefined;
@@ -803,3 +797,79 @@ devtools(app, { serveStatic });
 
 export const GET = handle(app);
 export const POST = handle(app);
+
+const generateNominateIntents = (
+	didNominate: boolean,
+	isVotingOpen: boolean
+) => {
+	if (didNominate) {
+		return [
+			<Button key={"back"} action="/status" value="status">
+				Back
+			</Button>,
+			isVotingOpen && (
+				<Button key={"vote"} action="/vote" value="vote">
+					Vote
+				</Button>
+			),
+			<Button key={"history"} action="/history" value="history">
+				History
+			</Button>
+		];
+	} else {
+		return [
+			<TextInput key={"text-input"} placeholder="sum/0x8f3e2c44" />,
+			<Button key={"nominate"} action="/nominate" value="nominateConfirm">
+				Submit
+			</Button>,
+			<Button key={"back"} action="/" value="back">
+				Back
+			</Button>
+		];
+	}
+};
+
+const generateIntents = (fid: number, castIdFid: number) => {
+	console.warn(fid, castIdFid);
+	if (fid === castIdFid) {
+		return [
+			<Button key={"check"} action="/check" value="check">
+				Refresh
+			</Button>,
+			<Button key={"split"} action="/split" value="split">
+				Split
+			</Button>
+		];
+	} else {
+		return [
+			<Button key={"check"} action="/check" value="check">
+				Refresh
+			</Button>,
+			<Button key={"start"} action="/" value="start">
+				Start
+			</Button>
+		];
+	}
+};
+
+const calculateNominations = (nominations: Nomination[]) => {
+	const formattedNominations = nominations.map(
+		(item, index) =>
+			`${index + 1}. ${item.username} - ${item.castId} - ${item.weight}`
+	);
+
+	return {
+		formattedNominations
+	};
+};
+
+const formattedNominations = (nominations: Nomination[]) => {
+	const formatted = nominations.map(
+		(item, index) =>
+			`${index + 1}. ${item.username} - ${item.castId} - ${item.votesCount}`
+	);
+
+	return {
+		formatted
+	};
+};
