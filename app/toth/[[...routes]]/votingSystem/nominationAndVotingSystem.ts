@@ -18,8 +18,6 @@ export class NominationAndVotingSystem {
 		const now = new Date();
 		const hours = now.getUTCHours();
 
-		this.nominations = await this.db.fetchNominations();
-
 		if (hours > 0 && hours < 18) {
 			this.startNominations();
 		} else if (hours >= 18) {
@@ -28,6 +26,8 @@ export class NominationAndVotingSystem {
 		} else if (hours === 42 % 24) {
 			this.endVoting();
 		}
+
+		this.nominations = await this.db.fetchNominations();
 	}
 
 	private startNominations(): void {
