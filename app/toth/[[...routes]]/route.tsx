@@ -530,10 +530,9 @@ app.frame("/nominate", async (c) => {
 	const today = new Date();
 	const hours = today.getUTCHours();
 
-	const url = "https://warpcast.com";
 	const castURL = () => {
 		if (inputText) {
-			return inputText.length > 0 ? `${url}/${inputText}` : "";
+			return inputText.length > 0 ? `${inputText}` : "";
 		} else {
 			return "";
 		}
@@ -546,13 +545,15 @@ app.frame("/nominate", async (c) => {
 			isValidCast = false || buttonValue === "nominate";
 		}));
 
-	const nominationInput = inputText?.split("/") || [];
-	if (isValidCast && nominationInput.length === 2) {
+	const regex = /https:\/\/warpcast\.com\/([^/]+)\/([^/]+)/;
+	const match = inputText?.match(regex);
+
+	if (isValidCast && match !== undefined && match !== null) {
 		if (hours < 18) {
 			const today = new Date().toISOString();
 			const nomination = {
-				username: nominationInput[0],
-				castId: nominationInput[1],
+				username: match[1],
+				castId: match[2],
 				fid: fid,
 				createdAt: today,
 				weight: isPowerBadgeUser ? 3 : 1
