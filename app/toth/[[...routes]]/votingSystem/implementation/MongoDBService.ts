@@ -54,21 +54,7 @@ export class MongoDBService implements IDatabaseService {
 
 		const json: Nomination[] = await fetchResponse.json();
 
-		const nominations: Nomination[] = json.map((nom) => {
-			return {
-				username: nom.username,
-				weight: nom.weight,
-				castId: nom.castId,
-				fid: nom.fid,
-				id: nom.id,
-				createdAt: nom.createdAt,
-				votesCount: nom.votesCount
-			};
-		});
-
-		this.nominations = nominations;
-
-		return nominations;
+		return json;
 	}
 
 	openVoting(): Promise<void> {
@@ -93,7 +79,7 @@ export class MongoDBService implements IDatabaseService {
 			console.error(e, "error add nomination");
 		});
 
-		return Promise.resolve(nomination);
+		return nomination;
 	}
 
 	async recordVote(nominationId: string, fid: number): Promise<void> {

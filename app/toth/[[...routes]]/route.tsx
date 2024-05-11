@@ -576,7 +576,12 @@ app.frame("/nominate", async (c) => {
 	const { frameData, inputText, deriveState, buttonValue } = c;
 
 	const fid = frameData?.fid ?? 0;
-	const nominations = await votingSystem.nominations;
+	const nominations = await votingSystem.fetchNominations();
+
+	const round = await votingSystem.getCurrentRounds();
+	const currentRound = round.find((r) => {
+		return r.status === "nominating";
+	});
 
 	const today = new Date();
 	const hours = today.getUTCHours();
@@ -613,7 +618,8 @@ app.frame("/nominate", async (c) => {
 				castId: match[2],
 				fid: fid,
 				createdAt: today,
-				weight: state.isPowerBadgeUser ? 3 : 1
+				weight: state.isPowerBadgeUser ? 3 : 1,
+				roundId: currentRound ? currentRound.id : ""
 			};
 			await votingSystem.nominate(nomination);
 		}
