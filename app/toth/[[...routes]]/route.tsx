@@ -301,7 +301,7 @@ app.frame("/status", async (c) => {
 			</div>
 		),
 		intents: [
-			isNominationRound && state.didNominate && (
+			isNominationRound && !state.didNominate && (
 				<Button key={"nominate"} action="/nominate" value="nominate">
 					Nominate
 				</Button>
