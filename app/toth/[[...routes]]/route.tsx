@@ -15,7 +15,6 @@ import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 interface State {
 	selectedCast: number;
 	didNominate: boolean;
-	isVotingOpen: boolean;
 	totalDegen: number;
 	dollarValue: string;
 	castIdFid: number;
@@ -173,13 +172,25 @@ app.frame("/leaderboard", async (c) => {
 });
 
 app.frame("/status", async (c) => {
+	const { frameData, deriveState } = c;
+
+	const fid = frameData?.fid ?? 0;
+
 	const round = await votingSystem.getCurrentRounds();
-	console.warn(round, "round");
+	const currentRound = round.find((r) => {
+		return r.status === "nominating" || r.status === "voting";
+	});
+
 	const isNominationRound = votingSystem.nominationOpen;
-	const isVotingOpen = votingSystem.votingOpen;
 	const _nominations = await votingSystem.nominations;
 	const { formattedNominations: nominations } =
 		calculateNominations(_nominations);
+
+	const userNomination = _nominations.find((nom) => nom.fid === fid);
+
+	const state = deriveState((previousState) => {
+		previousState.didNominate = userNomination !== undefined;
+	});
 
 	const shouldShowNominationMessage =
 		nominations.length === 0 && isNominationRound;
@@ -255,13 +266,6 @@ app.frame("/status", async (c) => {
 							<h1 style={{ color: "white" }}>No nominations</h1>
 						</div>
 					)}
-					{isVotingOpen && (
-						<div style={{ display: "flex", flexDirection: "column" }}>
-							<h1 style={{ fontSize: "3rem" }}>
-								Voting started. Place your votes
-							</h1>
-						</div>
-					)}
 				</div>
 				{isNominationRound && (
 					<div
@@ -283,23 +287,22 @@ app.frame("/status", async (c) => {
 								color: "#30E000"
 							}}
 						>
-							Round 1 / Voting starts in {timeFormattedVoting()}
+							Round {currentRound?.roundNumber ?? 10} / Voting starts in{" "}
+							{timeFormattedVoting()}
 						</h1>
 					</div>
 				)}
 			</div>
 		),
 		intents: [
-			isNominationRound && (
+			isNominationRound && state.didNominate && (
 				<Button key={"nominate"} action="/nominate" value="nominate">
 					Nominate
 				</Button>
 			),
-			isVotingOpen && (
-				<Button key={"vote"} action="/vote" value="vote">
-					Vote
-				</Button>
-			),
+			<Button key={"vote"} action="/vote" value="vote">
+				Vote
+			</Button>,
 			<Button key={"leaderboard"} action="/leaderboard" value="leaderboard">
 				Leaderboard
 			</Button>,
@@ -386,7 +389,18 @@ app.frame("/history", async (c) => {
 
 app.frame("/vote", async (c) => {
 	const { deriveState, buttonValue, frameData } = c;
-	const nominations = await votingSystem.nominations;
+
+	const votingRounds = await votingSystem.getCurrentRounds();
+	const roundNumber = votingRounds[0].roundNumber ?? 0;
+	const roundId = votingRounds.find((v) => {
+		if (v.status === "voting") {
+			return v;
+		}
+	})?.id;
+
+	const nominations = roundId
+		? await votingSystem.fetchNominationsByRound(roundId)
+		: [];
 	const { formatted: nominationsWithVotes } = formattedNominations(nominations);
 
 	const fid = frameData?.fid || 0;
@@ -411,7 +425,10 @@ app.frame("/vote", async (c) => {
 		votingSystem.vote(nominations[state.selectedCast].id, fid);
 	}
 
-	const selectedCast = `https://warpcast.com/${nominations[state.selectedCast].username}/${nominations[state.selectedCast].castId}`;
+	const selectedCast =
+		nominations.length > 0
+			? `https://warpcast.com/${nominations[state.selectedCast].username}/${nominations[state.selectedCast].castId}`
+			: "";
 
 	return c.res({
 		image: (
@@ -425,7 +442,6 @@ app.frame("/vote", async (c) => {
 					flexDirection: "column",
 					flexWrap: "nowrap",
 					height: "100%",
-					justifyContent: "center",
 					textAlign: "center",
 					width: "100%"
 				}}
@@ -467,6 +483,32 @@ app.frame("/vote", async (c) => {
 							justifyContent: "center"
 						}}
 					>
+						{nominationsWithVotes.length === 0 && (
+							<div
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "center"
+								}}
+							>
+								<h1
+									style={{
+										color: "white",
+										fontFamily: "Open Sans"
+									}}
+								>
+									No nominations in round {roundNumber}
+								</h1>
+								<h2
+									style={{
+										fontSize: "3rem",
+										color: "#30E000"
+									}}
+								>
+									Voting starts in {timeFormattedVoting()} for next round
+								</h2>
+							</div>
+						)}
 						{nominationsWithVotes.map((value, index) => (
 							<div
 								key={`${value}-${index}`}
@@ -494,10 +536,16 @@ app.frame("/vote", async (c) => {
 		),
 		intents: !hasUserVoted
 			? [
-					<Button key={"finalVote"} action="/vote" value="finalVote">
-						Vote
-					</Button>,
-
+					nominationsWithVotes.length > 0 && (
+						<Button key={"finalVote"} action="/vote" value="finalVote">
+							Vote
+						</Button>
+					),
+					nominationsWithVotes.length === 0 && (
+						<Button key={"back"} action="/status" value="back">
+							Back
+						</Button>
+					),
 					<Button.Redirect key={"redirect-to-cast"} location={selectedCast}>
 						View selected cast
 					</Button.Redirect>,
@@ -564,7 +612,6 @@ app.frame("/nominate", async (c) => {
 
 	const state = deriveState((previousState) => {
 		previousState.didNominate = userNomination !== undefined;
-		previousState.isVotingOpen = votingSystem.votingOpen;
 	});
 
 	return c.res({
@@ -636,7 +683,7 @@ app.frame("/nominate", async (c) => {
 				)}
 			</div>
 		),
-		intents: generateNominateIntents(state.didNominate, state.isVotingOpen)
+		intents: generateNominateIntents(state.didNominate)
 	});
 });
 
@@ -796,20 +843,15 @@ devtools(app, { serveStatic });
 export const GET = handle(app);
 export const POST = handle(app);
 
-const generateNominateIntents = (
-	didNominate: boolean,
-	isVotingOpen: boolean
-) => {
+const generateNominateIntents = (didNominate: boolean) => {
 	if (didNominate) {
 		return [
 			<Button key={"back"} action="/status" value="status">
 				Back
 			</Button>,
-			isVotingOpen && (
-				<Button key={"vote"} action="/vote" value="vote">
-					Vote
-				</Button>
-			),
+			<Button key={"vote"} action="/vote" value="vote">
+				Vote
+			</Button>,
 			<Button key={"history"} action="/history" value="history">
 				History
 			</Button>
@@ -828,7 +870,6 @@ const generateNominateIntents = (
 };
 
 const generateIntents = (fid: number, castIdFid: number) => {
-	console.warn(fid, castIdFid);
 	if (fid === castIdFid) {
 		return [
 			<Button key={"check"} action="/check" value="check">

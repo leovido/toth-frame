@@ -23,6 +23,7 @@ export type Vote = {
 
 export type Round = {
 	id: string;
+	roundNumber: number;
 	nominationStartTime: Date;
 	nominationEndTime: Date;
 	votingStartTime: Date;

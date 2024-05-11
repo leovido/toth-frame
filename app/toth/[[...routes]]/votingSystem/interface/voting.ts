@@ -8,4 +8,5 @@ export interface IDatabaseService {
 	recordVote(nominationId: string, fid: number): Promise<void>;
 	getVotingResults(fid: number): Promise<Vote | undefined>;
 	getCurrentRounds(): Promise<Round[]>;
+	fetchNominationsByRound(roundId: string): Promise<Nomination[]>;
 }

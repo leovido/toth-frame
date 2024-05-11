@@ -8,6 +8,23 @@ export class MongoDBService implements IDatabaseService {
 
 	constructor() {}
 
+	async fetchNominationsByRound(roundId: string): Promise<Nomination[]> {
+		const fetchResponse = await fetch(
+			`${process.env.TOTH_API}/nominationsByRound` || "",
+			{
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: roundId
+			}
+		);
+
+		const json: Nomination[] = await fetchResponse.json();
+
+		return json;
+	}
+
 	async getCurrentRounds(): Promise<Round[]> {
 		const fetchResponse = await fetch(
 			`${process.env.TOTH_API}/current-period` || "",
@@ -19,7 +36,6 @@ export class MongoDBService implements IDatabaseService {
 			}
 		);
 
-		console.warn(process.env.TOTH_API, "here");
 		const json: Round[] = await fetchResponse.json();
 
 		return json;

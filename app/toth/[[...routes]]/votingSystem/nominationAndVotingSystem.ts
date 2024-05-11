@@ -1,13 +1,13 @@
 import { MongoDBService } from "./implementation/MongoDBService";
 import { IDatabaseService } from "./interface/voting";
-import { Nomination } from "./types";
+import { Nomination, Round } from "./types";
 
 export class NominationAndVotingSystem {
 	private db: IDatabaseService;
 	public votes: Record<string, number> = {};
 	public nominations: Nomination[] = [];
+	public rounds: Round[] = [];
 	public nominationOpen: boolean = false;
-	public votingOpen: boolean = false;
 
 	constructor(db: IDatabaseService = new MongoDBService()) {
 		this.db = db;
@@ -18,32 +18,32 @@ export class NominationAndVotingSystem {
 		const now = new Date();
 		const hours = now.getUTCHours();
 
+		// TODO: remove hardcoded values to use ROUND nomination/voting start and end times
 		if (hours > 0 && hours < 18) {
 			this.startNominations();
-		} else if (hours >= 18) {
-			this.startVoting();
+		}
+
+		if (hours >= 18) {
 			this.nominationOpen = false;
 		} else if (hours === 42 % 24) {
 			this.endVoting();
 		}
 
+		this.rounds = await this.db.getCurrentRounds();
 		this.nominations = await this.db.fetchNominations();
 	}
 
 	private startNominations(): void {
 		this.nominationOpen = true;
-		this.votingOpen = false;
 		console.log("Nominations have started.");
 	}
 
 	private startVoting(): void {
 		this.votes = {}; // Reset votes
-		this.votingOpen = true;
 		console.log("Voting has started.");
 	}
 
 	private endVoting(): void {
-		this.votingOpen = false;
 		console.log("Voting has ended.");
 		this.displayResults();
 	}
@@ -66,17 +66,12 @@ export class NominationAndVotingSystem {
 	}
 
 	public async vote(nominationId: string, fid: number) {
-		if (this.votingOpen) {
-			await this.db.recordVote(nominationId, fid);
-			console.log(`Vote received for: ${nominationId} by ${fid}`);
-		} else {
-			console.log("Voting is closed.");
-		}
+		await this.db.recordVote(nominationId, fid);
+		console.log(`Vote received for: ${nominationId} by ${fid}`);
 	}
 
 	public async fetchNominations() {
 		try {
-			console.warn("fetching...");
 			const nominations = await this.db.fetchNominations();
 
 			return nominations;
@@ -84,6 +79,12 @@ export class NominationAndVotingSystem {
 			console.error(error);
 			throw error;
 		}
+	}
+
+	public async fetchNominationsByRound(roundId: string) {
+		const currentRound = await this.db.fetchNominationsByRound(roundId);
+
+		return currentRound;
 	}
 
 	public async getVoteResults(fid: number) {
