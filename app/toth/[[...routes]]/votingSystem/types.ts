@@ -20,3 +20,13 @@ export type Vote = {
 	fid: number;
 	id: string;
 };
+
+export type Round = {
+	id: string;
+	nominationStartTime: Date;
+	nominationEndTime: Date;
+	votingStartTime: Date;
+	votingEndTime: Date;
+	status: string; // active, voting, completed
+	winner: string; // castId
+};

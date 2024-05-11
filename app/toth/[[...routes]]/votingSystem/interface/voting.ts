@@ -1,4 +1,4 @@
-import { Nomination, Vote } from "../types";
+import { Nomination, Vote, Round } from "../types";
 
 export interface IDatabaseService {
 	fetchNominations(): Promise<Nomination[]>;
@@ -7,4 +7,5 @@ export interface IDatabaseService {
 	addNomination(data: Omit<Nomination, "id">): Promise<Nomination>;
 	recordVote(nominationId: string, fid: number): Promise<void>;
 	getVotingResults(fid: number): Promise<Vote | undefined>;
+	getCurrentRounds(): Promise<Round[]>;
 }

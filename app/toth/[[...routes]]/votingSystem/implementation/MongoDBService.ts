@@ -1,12 +1,29 @@
 import { randomUUID } from "crypto";
 import { IDatabaseService } from "../interface/voting";
-import { Nomination, Vote } from "../types";
+import { Nomination, Vote, Round } from "../types";
 
 export class MongoDBService implements IDatabaseService {
 	public nominations: Nomination[] = [];
 	public votes: Vote[] = [];
 
 	constructor() {}
+
+	async getCurrentRounds(): Promise<Round[]> {
+		const fetchResponse = await fetch(
+			`${process.env.TOTH_API}/current-period` || "",
+			{
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}
+		);
+
+		console.warn(process.env.TOTH_API, "here");
+		const json: Round[] = await fetchResponse.json();
+
+		return json;
+	}
 
 	async fetchNominations(): Promise<Nomination[]> {
 		const fetchResponse = await fetch(

@@ -19,8 +19,6 @@ interface State {
 	totalDegen: number;
 	dollarValue: string;
 	castIdFid: number;
-	recipients: { [key: string]: number };
-	isPowerBadgeUser: boolean;
 }
 
 const app = new Frog<{ State: State }>({
@@ -28,8 +26,7 @@ const app = new Frog<{ State: State }>({
 		selectedCast: 0,
 		totalDegen: 0,
 		dollarValue: "0",
-		castIdFid: 0,
-		recipients: []
+		castIdFid: 0
 	},
 	assetsPath: "/",
 	basePath: "/toth",
@@ -176,6 +173,8 @@ app.frame("/leaderboard", async (c) => {
 });
 
 app.frame("/status", async (c) => {
+	const round = await votingSystem.getCurrentRounds();
+	console.warn(round, "round");
 	const isNominationRound = votingSystem.nominationOpen;
 	const isVotingOpen = votingSystem.votingOpen;
 	const _nominations = await votingSystem.nominations;
@@ -566,7 +565,6 @@ app.frame("/nominate", async (c) => {
 	const state = deriveState((previousState) => {
 		previousState.didNominate = userNomination !== undefined;
 		previousState.isVotingOpen = votingSystem.votingOpen;
-		previousState.isPowerBadgeUser = isPowerBadgeUser;
 	});
 
 	return c.res({

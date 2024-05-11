@@ -58,6 +58,13 @@ export class NominationAndVotingSystem {
 		}
 	}
 
+	public async getCurrentRounds() {
+		const currentRound = await this.db.getCurrentRounds();
+		console.log(`Current round: ${currentRound}`);
+
+		return currentRound;
+	}
+
 	public async vote(nominationId: string, fid: number) {
 		if (this.votingOpen) {
 			await this.db.recordVote(nominationId, fid);
