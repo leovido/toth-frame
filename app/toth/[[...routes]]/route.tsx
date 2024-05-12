@@ -211,7 +211,6 @@ app.frame("/status", async (c) => {
 					backgroundSize: "100% 100%",
 					display: "flex",
 					flexDirection: "column",
-					justifyContent: "space-between",
 					flexWrap: "nowrap",
 					height: "100vh",
 					width: "100%"
@@ -306,7 +305,7 @@ app.frame("/status", async (c) => {
 					Nominate
 				</Button>
 			),
-			isPowerBadgeUser && (
+			!isPowerBadgeUser && (
 				<Button key={"vote"} action="/vote" value="vote">
 					Vote
 				</Button>

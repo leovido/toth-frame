@@ -10,13 +10,12 @@ export class MongoDBService implements IDatabaseService {
 
 	async fetchNominationsByRound(roundId: string): Promise<Nomination[]> {
 		const fetchResponse = await fetch(
-			`${process.env.TOTH_API}/nominationsByRound` || "",
+			`${process.env.TOTH_API}/nominationsByRound?roundId=${roundId}` || "",
 			{
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json"
-				},
-				body: roundId
+				}
 			}
 		);
 
