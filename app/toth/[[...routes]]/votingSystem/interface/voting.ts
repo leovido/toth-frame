@@ -10,4 +10,5 @@ export interface IDatabaseService {
 	getCurrentRounds(): Promise<Round[]>;
 	fetchNominationsByRound(roundId: string): Promise<Nomination[]>;
 	fetchNominationsByFid(fid: number): Promise<Nomination | undefined>;
+	fetchNominationById(id: string): Promise<Nomination | undefined>;
 }

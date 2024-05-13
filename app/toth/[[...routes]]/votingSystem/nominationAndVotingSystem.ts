@@ -90,6 +90,16 @@ export class NominationAndVotingSystem {
 		}
 	}
 
+	public async fetchNominationById(id: string) {
+		try {
+			const nomination = await this.db.fetchNominationById(id);
+
+			return nomination;
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	}
 	public async fetchNominationsByRound(roundId: string) {
 		const currentRound = await this.db.fetchNominationsByRound(roundId);
 

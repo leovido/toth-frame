@@ -445,6 +445,9 @@ app.frame("/vote", async (c) => {
 
 	const fid = frameData?.fid || 0;
 	const vote = await votingSystem.getVoteResults(fid, roundId || "");
+	const theVotedNomination = await votingSystem.fetchNominationById(
+		vote?.nominationId
+	);
 	let hasUserVoted = vote ? true : false;
 
 	const state = deriveState((previousState) => {
@@ -521,7 +524,15 @@ app.frame("/vote", async (c) => {
 								fontFamily: "Open Sans"
 							}}
 						>
-							You voted for round {roundNumber}
+							You voted for @{theVotedNomination?.username}
+						</h1>
+						<h1
+							style={{
+								color: "#30E000",
+								fontFamily: "Open Sans"
+							}}
+						>
+							Cast content....
 						</h1>
 					</div>
 				)}
