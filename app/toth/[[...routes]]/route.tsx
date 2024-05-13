@@ -198,7 +198,7 @@ app.frame("/status", async (c) => {
 
 	const isNominationRound = votingSystem.nominationOpen;
 	const _nominations = await votingSystem.fetchNominationsByRound(
-		nominationRound?.id ?? ""
+		nominationRound?.id ?? votingRound?.id ?? ""
 	);
 	const { formattedNominations: nominations } =
 		calculateNominations(_nominations);
