@@ -446,8 +446,15 @@ app.frame("/vote", async (c) => {
 	const fid = frameData?.fid || 0;
 	const vote = await votingSystem.getVoteResults(fid, roundId || "");
 	const theVotedNomination = await votingSystem.fetchNominationById(
-		vote?.nominationId
+		vote?.nominationId ?? ""
 	);
+	const castId = theVotedNomination ? theVotedNomination[0].castId : "";
+	const responseFetchCast = await client.lookUpCastByHashOrWarpcastUrl(
+		`https://warpcast.com/${theVotedNomination![0].username}/${castId}`,
+		"url"
+	);
+	const castText = responseFetchCast.cast.text;
+
 	let hasUserVoted = vote ? true : false;
 
 	const state = deriveState((previousState) => {
@@ -518,21 +525,26 @@ app.frame("/vote", async (c) => {
 							justifyContent: "center"
 						}}
 					>
+						{theVotedNomination && (
+							<h1
+								style={{
+									color: "#30E000",
+									fontFamily: "Open Sans",
+									fontSize: "3rem",
+									justifyContent: "center"
+								}}
+							>
+								You voted for @{theVotedNomination[0].username ?? ""}
+							</h1>
+						)}
 						<h1
 							style={{
-								color: "#30E000",
-								fontFamily: "Open Sans"
+								color: "white",
+								fontFamily: "Open Sans",
+								fontSize: "2rem"
 							}}
 						>
-							You voted for @{theVotedNomination?.username}
-						</h1>
-						<h1
-							style={{
-								color: "#30E000",
-								fontFamily: "Open Sans"
-							}}
-						>
-							Cast content....
+							{castText}
 						</h1>
 					</div>
 				)}
