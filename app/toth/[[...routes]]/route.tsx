@@ -298,8 +298,17 @@ app.frame("/status", async (c) => {
 								color: "#30E000"
 							}}
 						>
-							Round {votingRound?.roundNumber ?? 10} / Voting starts in{" "}
+							Voting for R{nominationRound!.roundNumber} starts in{" "}
 							{timeFormattedVoting()}
+						</h1>
+						<h1
+							style={{
+								fontSize: "2rem",
+								marginTop: -16,
+								color: "#30E000"
+							}}
+						>
+							Voting for R{votingRound?.roundNumber ?? 10} is live now
 						</h1>
 					</div>
 				)}
