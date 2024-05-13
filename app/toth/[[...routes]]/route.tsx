@@ -194,6 +194,7 @@ app.frame("/status", async (c) => {
 
 	const isNominationRound = votingSystem.nominationOpen;
 	const _nominations = await votingSystem.nominations;
+	console.warn(_nominations, "here");
 	const { formattedNominations: nominations } =
 		calculateNominations(_nominations);
 
@@ -656,6 +657,7 @@ app.frame("/nominate", async (c) => {
 				roundId: currentRound ? currentRound.id : ""
 			};
 			await votingSystem.nominate(nomination);
+			state.didNominate = true;
 		}
 	}
 
@@ -912,7 +914,7 @@ const generateNominateIntents = (
 			<Button key={"nominate"} action="/nominate" value="nominateConfirm">
 				Submit
 			</Button>,
-			<Button key={"back"} action="/" value="back">
+			<Button key={"back"} action="/status" value="back">
 				Back
 			</Button>
 		];

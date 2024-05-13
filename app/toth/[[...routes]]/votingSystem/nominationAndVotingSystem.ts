@@ -50,8 +50,7 @@ export class NominationAndVotingSystem {
 
 	public async nominate(data: Omit<Nomination, "id">) {
 		if (this.nominationOpen) {
-			const newNomination = await this.db.addNomination(data);
-			this.nominations.push(newNomination);
+			await this.db.addNomination(data);
 			console.log(`Nomination received: ${data.username}/${data.castId}`);
 		} else {
 			console.log("Nominations are closed.");
