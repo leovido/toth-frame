@@ -5,8 +5,8 @@ export interface IDatabaseService {
 	openVoting(): Promise<void>;
 	closeVoting(): Promise<void>;
 	addNomination(data: Omit<Nomination, "id">): Promise<Nomination>;
-	recordVote(nominationId: string, fid: number): Promise<void>;
-	getVotingResults(fid: number): Promise<Vote | undefined>;
+	recordVote(nominationId: string, fid: number, roundId: string): Promise<void>;
+	getVotingResults(fid: number, roundId: string): Promise<Vote | undefined>;
 	getCurrentRounds(): Promise<Round[]>;
 	fetchNominationsByRound(roundId: string): Promise<Nomination[]>;
 }

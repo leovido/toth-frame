@@ -60,13 +60,12 @@ export class NominationAndVotingSystem {
 
 	public async getCurrentRounds() {
 		const currentRound = await this.db.getCurrentRounds();
-		console.log(`Current round: ${currentRound}`);
 
 		return currentRound;
 	}
 
-	public async vote(nominationId: string, fid: number) {
-		await this.db.recordVote(nominationId, fid);
+	public async vote(nominationId: string, fid: number, roundId: string) {
+		await this.db.recordVote(nominationId, fid, roundId);
 		console.log(`Vote received for: ${nominationId} by ${fid}`);
 	}
 
@@ -87,9 +86,9 @@ export class NominationAndVotingSystem {
 		return currentRound;
 	}
 
-	public async getVoteResults(fid: number) {
+	public async getVoteResults(fid: number, roundId: string) {
 		try {
-			const votes = await this.db.getVotingResults(fid);
+			const votes = await this.db.getVotingResults(fid, roundId);
 
 			return votes;
 		} catch (error) {

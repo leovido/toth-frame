@@ -81,11 +81,16 @@ export class MongoDBService implements IDatabaseService {
 		return nomination;
 	}
 
-	async recordVote(nominationId: string, fid: number): Promise<void> {
+	async recordVote(
+		nominationId: string,
+		fid: number,
+		roundId: string
+	): Promise<void> {
 		const data: Vote = {
 			nominationId,
 			createdAt: new Date().toISOString(),
 			fid,
+			roundId,
 			id: randomUUID()
 		};
 		const fetchResponse = await fetch(`${process.env.TOTH_API}/votes` || "", {
@@ -100,9 +105,9 @@ export class MongoDBService implements IDatabaseService {
 		return Promise.resolve(json);
 	}
 
-	async getVotingResults(fid: number) {
+	async getVotingResults(fid: number, roundId: string) {
 		const apiUrl = process.env.TOTH_API
-			? `${process.env.TOTH_API}/votes`
+			? `${process.env.TOTH_API}/votes?roundId=${roundId}`
 			: "https://default-api-url/votes";
 
 		try {

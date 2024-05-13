@@ -19,6 +19,7 @@ interface State {
 	dollarValue: string;
 	castIdFid: number;
 	isPowerBadgeUser: boolean;
+	nominationsToVote: Nomination[];
 }
 
 const app = new Frog<{ State: State }>({
@@ -27,7 +28,8 @@ const app = new Frog<{ State: State }>({
 		totalDegen: 0,
 		dollarValue: "0",
 		castIdFid: 0,
-		isPowerBadgeUser: false
+		isPowerBadgeUser: false,
+		nominationsToVote: []
 	},
 	assetsPath: "/",
 	basePath: "/toth",
@@ -182,8 +184,12 @@ app.frame("/status", async (c) => {
 	const isPowerBadgeUser = response.users[0].power_badge;
 
 	const round = await votingSystem.getCurrentRounds();
-	const currentRound = round.find((r) => {
-		return r.status === "nominating" || r.status === "voting";
+	const votingRound = round.find((r) => {
+		return r.status === "voting";
+	});
+
+	const nominationRound = round.find((r) => {
+		return r.status === "nominating";
 	});
 
 	const isNominationRound = votingSystem.nominationOpen;
@@ -283,7 +289,7 @@ app.frame("/status", async (c) => {
 						}}
 					>
 						<h1 style={{ fontSize: "3.5rem", marginTop: 24 }}>
-							Nominations are live now
+							Nominations are live now (R{nominationRound!.roundNumber})
 						</h1>
 						<h1
 							style={{
@@ -292,7 +298,7 @@ app.frame("/status", async (c) => {
 								color: "#30E000"
 							}}
 						>
-							Round {currentRound?.roundNumber ?? 10} / Voting starts in{" "}
+							Round {votingRound?.roundNumber ?? 10} / Voting starts in{" "}
 							{timeFormattedVoting()}
 						</h1>
 					</div>
@@ -405,17 +411,26 @@ app.frame("/vote", async (c) => {
 		}
 	})?.id;
 
-	const nominations = roundId
-		? await votingSystem.fetchNominationsByRound(roundId)
-		: [];
-	const { formatted: nominationsWithVotes } = formattedNominations(nominations);
+	const state2 = deriveState(() => {});
+	const _nominations = async () => {
+		if (state2.nominationsToVote.length > 0) {
+			return state2.nominationsToVote;
+		} else {
+			if (roundId) {
+				return await votingSystem.fetchNominationsByRound(roundId);
+			} else {
+				return [];
+			}
+		}
+	};
+	const nominations = await _nominations();
 
 	const fid = frameData?.fid || 0;
-	const vote = await votingSystem.getVoteResults(fid);
-
-	const hasUserVoted = vote ? true : false;
+	const vote = await votingSystem.getVoteResults(fid, roundId || "");
+	let hasUserVoted = vote ? true : false;
 
 	const state = deriveState((previousState) => {
+		previousState.nominationsToVote = nominations;
 		if (buttonValue === "nextCast") {
 			if (previousState.selectedCast === 4) {
 				previousState.selectedCast = 0;
@@ -428,8 +443,19 @@ app.frame("/vote", async (c) => {
 		}
 	});
 
+	const { formatted: nominationsWithVotes } = formattedNominations(nominations);
+
 	if (buttonValue === "finalVote") {
-		votingSystem.vote(nominations[state.selectedCast].id, fid);
+		try {
+			await votingSystem.vote(
+				nominations[state.selectedCast].id,
+				fid,
+				roundId || ""
+			);
+			hasUserVoted = true;
+		} catch (e) {
+			hasUserVoted = false;
+		}
 	}
 
 	const selectedCast =
@@ -477,7 +503,7 @@ app.frame("/vote", async (c) => {
 								fontFamily: "Open Sans"
 							}}
 						>
-							You voted. Thank you.
+							You voted for round {roundNumber}
 						</h1>
 					</div>
 				)}
@@ -564,8 +590,8 @@ app.frame("/vote", async (c) => {
 					</Button>
 				]
 			: [
-					<Button key={"start"} action="/" value="start">
-						Start
+					<Button key={"status"} action="/status" value="status">
+						Status
 					</Button>
 				]
 	});

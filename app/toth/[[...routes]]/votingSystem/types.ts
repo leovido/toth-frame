@@ -19,6 +19,7 @@ export type Vote = {
 	createdAt: string;
 	fid: number;
 	id: string;
+	roundId: string;
 };
 
 export type Round = {
