@@ -164,13 +164,15 @@ app.frame("/leaderboard", async (c) => {
 			<Button key={"/status"} action="/status" value="status">
 				Back
 			</Button>,
-			<Button
-				key={"autosubscribe"}
-				action="/autosubscribe"
-				value="autosubscribe"
-			>
-				Autosubscribe
-			</Button>
+			false && (
+				<Button
+					key={"autosubscribe"}
+					action="/autosubscribe"
+					value="autosubscribe"
+				>
+					Autosubscribe
+				</Button>
+			)
 		]
 	});
 });
@@ -192,9 +194,12 @@ app.frame("/status", async (c) => {
 		return r.status === "nominating";
 	});
 
+	console.warn(nominationRound, "round");
+
 	const isNominationRound = votingSystem.nominationOpen;
-	const _nominations = await votingSystem.nominations;
-	console.warn(_nominations, "here");
+	const _nominations = await votingSystem.fetchNominationsByRound(
+		nominationRound?.id ?? ""
+	);
 	const { formattedNominations: nominations } =
 		calculateNominations(_nominations);
 
@@ -295,8 +300,9 @@ app.frame("/status", async (c) => {
 						<h1
 							style={{
 								fontSize: "2rem",
-								marginTop: -16,
-								color: "#30E000"
+								marginTop: -40,
+								color: "#30E000",
+								opacity: 0.8
 							}}
 						>
 							Voting for R{nominationRound!.roundNumber} starts in{" "}
@@ -304,12 +310,12 @@ app.frame("/status", async (c) => {
 						</h1>
 						<h1
 							style={{
-								fontSize: "2rem",
+								fontSize: "3rem",
 								marginTop: -16,
 								color: "#30E000"
 							}}
 						>
-							Voting for R{votingRound?.roundNumber ?? 10} is live now
+							Voting is live now (R{votingRound?.roundNumber ?? 10})
 						</h1>
 					</div>
 				)}
@@ -321,7 +327,7 @@ app.frame("/status", async (c) => {
 					Nominate
 				</Button>
 			),
-			isPowerBadgeUser && (
+			!isPowerBadgeUser && (
 				<Button key={"vote"} action="/vote" value="vote">
 					Vote
 				</Button>
@@ -329,13 +335,15 @@ app.frame("/status", async (c) => {
 			<Button key={"leaderboard"} action="/leaderboard" value="leaderboard">
 				Leaderboard
 			</Button>,
-			<Button
-				key={"autosubscribe"}
-				action="/autosubscribe"
-				value="autosubscribe"
-			>
-				Autosubscribe
-			</Button>
+			false && (
+				<Button
+					key={"autosubscribe"}
+					action="/autosubscribe"
+					value="autosubscribe"
+				>
+					Autosubscribe
+				</Button>
+			)
 		]
 	});
 });
@@ -496,7 +504,7 @@ app.frame("/vote", async (c) => {
 						color: "#38BDF8"
 					}}
 				>
-					🎩 TOTH - Vote 🎩
+					🎩 TOTH - Vote (R{roundNumber}) 🎩
 				</h1>
 				{hasUserVoted && (
 					<div
@@ -589,15 +597,21 @@ app.frame("/vote", async (c) => {
 							Back
 						</Button>
 					),
-					<Button.Redirect key={"redirect-to-cast"} location={selectedCast}>
-						View selected cast
-					</Button.Redirect>,
-					<Button key={"prevCast"} action="/vote" value="prevCast">
-						←
-					</Button>,
-					<Button key={"nextCast"} action="/vote" value="nextCast">
-						→
-					</Button>
+					nominations.length > 0 && (
+						<Button.Redirect key={"redirect-to-cast"} location={selectedCast}>
+							View selected cast
+						</Button.Redirect>
+					),
+					state.selectedCast > 0 && (
+						<Button key={"prevCast"} action="/vote" value="prevCast">
+							↑
+						</Button>
+					),
+					state.selectedCast < nominations.length - 1 && (
+						<Button key={"nextCast"} action="/vote" value="nextCast">
+							↓
+						</Button>
+					)
 				]
 			: [
 					<Button key={"status"} action="/status" value="status">
