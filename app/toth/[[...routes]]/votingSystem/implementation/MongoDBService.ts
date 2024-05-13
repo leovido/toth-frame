@@ -24,6 +24,22 @@ export class MongoDBService implements IDatabaseService {
 		return json;
 	}
 
+	async fetchNominationsByFid(fid: number): Promise<Nomination | undefined> {
+		const fetchResponse = await fetch(
+			`${process.env.TOTH_API}/nominationsByFid?fid=${fid}` || "",
+			{
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}
+		);
+
+		const nomination: Nomination = await fetchResponse.json();
+
+		return nomination;
+	}
+
 	async getCurrentRounds(): Promise<Round[]> {
 		const fetchResponse = await fetch(
 			`${process.env.TOTH_API}/current-period` || "",

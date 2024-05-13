@@ -611,7 +611,6 @@ app.frame("/nominate", async (c) => {
 	const { frameData, inputText, deriveState, buttonValue } = c;
 
 	const fid = frameData?.fid ?? 0;
-	const nominations = await votingSystem.fetchNominations();
 
 	const round = await votingSystem.getCurrentRounds();
 	const currentRound = round.find((r) => {
@@ -636,8 +635,7 @@ app.frame("/nominate", async (c) => {
 			isValidCast = false || buttonValue === "nominate";
 		}));
 
-	const userNomination = nominations.find((nom) => nom.fid === fid);
-
+	const userNomination = await votingSystem.fetchNominationsByFid(fid);
 	const state = deriveState((previousState) => {
 		previousState.didNominate = userNomination !== undefined;
 	});
