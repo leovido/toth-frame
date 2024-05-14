@@ -35,7 +35,7 @@ export class MongoDBService implements IDatabaseService {
 			}
 		);
 
-		const nomination: Nomination = await fetchResponse.json();
+		const nomination: Nomination[] = await fetchResponse.json();
 
 		return nomination;
 	}
