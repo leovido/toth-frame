@@ -40,7 +40,7 @@ export class MongoDBService implements IDatabaseService {
 		return nomination;
 	}
 
-	async fetchNominationById(id: string): Promise<Nomination[] | undefined> {
+	async fetchNominationById(id: string): Promise<Nomination[]> {
 		const fetchResponse = await fetch(
 			`${process.env.TOTH_API}/nominationsById?id=${id}` || "",
 			{

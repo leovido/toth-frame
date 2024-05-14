@@ -327,7 +327,7 @@ app.frame("/status", async (c) => {
 					Nominate
 				</Button>
 			),
-			isPowerBadgeUser && (
+			!isPowerBadgeUser && (
 				<Button key={"vote"} action="/vote" value="vote">
 					Vote
 				</Button>
@@ -445,12 +445,17 @@ app.frame("/vote", async (c) => {
 
 	const fid = frameData?.fid || 0;
 	const vote = await votingSystem.getVoteResults(fid, roundId || "");
+	console.warn(vote, "here");
 	const theVotedNomination = await votingSystem.fetchNominationById(
 		vote?.nominationId ?? ""
 	);
-	const castId = theVotedNomination ? theVotedNomination[0].castId : "";
+	const castId =
+		theVotedNomination.length > 0 ? theVotedNomination[0].castId : "";
+	const username =
+		theVotedNomination.length > 0 ? theVotedNomination[0].username : "";
+
 	const responseFetchCast = await client.lookUpCastByHashOrWarpcastUrl(
-		`https://warpcast.com/${theVotedNomination![0].username}/${castId}`,
+		`https://warpcast.com/${username}/${castId}`,
 		"url"
 	);
 	const castText = responseFetchCast.cast.text;
