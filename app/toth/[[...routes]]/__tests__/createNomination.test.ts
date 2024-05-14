@@ -1,5 +1,4 @@
 import { createNomination } from "../votingSystem/nomination"; // Adjust the import path as necessary
-import { NominationAndVotingSystem } from "../votingSystem/nominationAndVotingSystem"; // Ensure the import path is correct
 
 // Mocking the external votingSystem module
 jest.mock("../votingSystem/nominationAndVotingSystem", () => {
