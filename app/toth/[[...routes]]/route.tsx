@@ -674,7 +674,7 @@ app.frame("/nominate", async (c) => {
 
 	const userNomination = await votingSystem.fetchNominationsByFid(fid);
 	const state = deriveState((previousState) => {
-		previousState.didNominate = userNomination !== undefined;
+		previousState.didNominate = userNomination?.length > 0 ?? false;
 	});
 
 	const regex = /https:\/\/warpcast\.com\/([^/]+)\/([^/]+)/;
@@ -756,7 +756,8 @@ app.frame("/nominate", async (c) => {
 								fontWeight: 400
 							}}
 						>
-							You nominated {userNomination?.username}
+							You nominated{" "}
+							{userNomination.length > 0 ? userNomination[0].username : ""}
 						</h2>
 						<h2 style={{ fontSize: "3rem", color: "#30E000" }}>
 							Voting starts in {timeFormattedVoting()}
