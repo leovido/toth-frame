@@ -33,12 +33,9 @@ describe("createNomination", () => {
 		status: "nominating",
 		winner: ""
 	};
-	let votingSystem;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		votingSystem = new NominationAndVotingSystem();
-
 		jest
 			.useFakeTimers()
 			.setSystemTime(new Date("2024-01-01T15:00:00Z").getTime()); // Set a specific time before the nomination end time
@@ -70,12 +67,10 @@ describe("createNomination", () => {
 	});
 
 	it("should return an empty array if the nomination time is past", async () => {
-		// Move time to after the nomination end time
 		jest
 			.useFakeTimers()
 			.setSystemTime(new Date("2024-01-01T20:00:00Z").getTime());
 
-		// Execution
 		const result = await createNomination(
 			true,
 			matchMock,
@@ -84,7 +79,6 @@ describe("createNomination", () => {
 			currentRound
 		);
 
-		// Assertions
 		expect(result).toEqual([]);
 	});
 
