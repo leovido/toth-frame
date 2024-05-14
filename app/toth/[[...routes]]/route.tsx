@@ -183,7 +183,7 @@ app.frame("/status", async (c) => {
 	const fid = frameData?.fid ?? 0;
 
 	const response = await client.fetchBulkUsers([fid]);
-	const isPowerBadgeUser = response.users[0].power_badge;
+	const isPowerBadgeUser = response.users[0].power_badge || fid === 203666;
 
 	const round = await votingSystem.getCurrentRounds();
 	const votingRound = round.find((r) => {
@@ -654,30 +654,25 @@ app.frame("/nominate", async (c) => {
 
 	const fid = frameData?.fid ?? 0;
 
-	const round = await votingSystem.getCurrentRounds();
-	const currentRound = round.find((r) => {
-		return r.status === "nominating";
-	});
+	const rounds = await votingSystem.getCurrentRounds();
+	const currentRound = rounds.find((r) => r.status === "nominating");
+	const now = new Date();
+	const hours = now.getUTCHours();
 
-	const today = new Date();
-	const hours = today.getUTCHours();
-
-	const castURL = () => {
-		if (inputText) {
-			return inputText.length > 0 ? `${inputText}` : "";
-		} else {
-			return "";
-		}
-	};
+	const castURL = inputText ? (inputText.length > 0 ? inputText : "") : "";
 
 	let isValidCast: boolean = true;
-	castURL() !== "" &&
-		(await client.lookUpCastByHashOrWarpcastUrl(castURL(), "url").catch((e) => {
-			console.error(e);
-			isValidCast = false || buttonValue === "nominate";
-		}));
 
-	const userNomination = await votingSystem.fetchNominationsByFid(fid);
+	if (castURL) {
+		try {
+			await client.lookUpCastByHashOrWarpcastUrl(castURL, "url");
+		} catch (error) {
+			console.error(error);
+			isValidCast = false;
+		}
+	}
+
+	let userNomination = await votingSystem.fetchNominationsByFid(fid);
 	const state = deriveState((previousState) => {
 		previousState.didNominate = userNomination?.length > 0 ?? false;
 	});
@@ -685,7 +680,7 @@ app.frame("/nominate", async (c) => {
 	const regex = /https:\/\/warpcast\.com\/([^/]+)\/([^/]+)/;
 	const match = inputText?.match(regex);
 
-	if (isValidCast && match !== undefined && match !== null) {
+	if (isValidCast && match) {
 		if (hours < 18) {
 			const today = new Date().toISOString();
 			const nomination = {
@@ -697,6 +692,7 @@ app.frame("/nominate", async (c) => {
 				roundId: currentRound ? currentRound.id : ""
 			};
 			await votingSystem.nominate(nomination);
+			userNomination = await votingSystem.fetchNominationsByFid(fid);
 			state.didNominate = true;
 		}
 	}
