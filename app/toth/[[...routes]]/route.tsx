@@ -327,7 +327,7 @@ app.frame("/status", async (c) => {
 					Nominate
 				</Button>
 			),
-			!isPowerBadgeUser && (
+			isPowerBadgeUser && (
 				<Button key={"vote"} action="/vote" value="vote">
 					Vote
 				</Button>
