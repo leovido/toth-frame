@@ -9,6 +9,19 @@ import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v1";
 // Initialize Neynar API client with your API key
 export const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY || "");
 
+export async function verifyCastURL(url: string): Promise<boolean> {
+	if (url.length === 0) {
+		return false;
+	}
+	try {
+		await client.lookUpCastByHashOrWarpcastUrl(url, "url");
+		return true;
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
+}
+
 // Function to fetch cast information from a Warpcast URL
 async function fetchCastInfo(warpcastUrl: string) {
 	try {

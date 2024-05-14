@@ -8,9 +8,10 @@ import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
 import { firstRun } from "./helpers";
 import { votingSystem } from "./client";
-import { client } from "./fetch";
+import { client, verifyCastURL } from "./fetch";
 import { Nomination } from "./votingSystem/types";
 import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
+import { createNomination } from "./votingSystem/nomination";
 
 interface State {
 	selectedCast: number;
@@ -193,8 +194,6 @@ app.frame("/status", async (c) => {
 	const nominationRound = round.find((r) => {
 		return r.status === "nominating";
 	});
-
-	console.warn(nominationRound, "round");
 
 	const isNominationRound = votingSystem.nominationOpen;
 	const _nominations = await votingSystem.fetchNominationsByRound(
@@ -654,24 +653,15 @@ app.frame("/nominate", async (c) => {
 
 	const fid = frameData?.fid ?? 0;
 
+	// fetch the current nominating round
 	const rounds = await votingSystem.getCurrentRounds();
 	const currentRound = rounds.find((r) => r.status === "nominating");
-	const now = new Date();
-	const hours = now.getUTCHours();
 
+	// sanitise input and check cast input URL
 	const castURL = inputText ? (inputText.length > 0 ? inputText : "") : "";
+	const isValidCast = await verifyCastURL(castURL);
 
-	let isValidCast: boolean = true;
-
-	if (castURL) {
-		try {
-			await client.lookUpCastByHashOrWarpcastUrl(castURL, "url");
-		} catch (error) {
-			console.error(error);
-			isValidCast = false;
-		}
-	}
-
+	// fetching one nomination for the day
 	let userNomination = await votingSystem.fetchNominationsByFid(fid);
 	const state = deriveState((previousState) => {
 		previousState.didNominate = userNomination?.length > 0 ?? false;
@@ -680,22 +670,13 @@ app.frame("/nominate", async (c) => {
 	const regex = /https:\/\/warpcast\.com\/([^/]+)\/([^/]+)/;
 	const match = inputText?.match(regex);
 
-	if (isValidCast && match) {
-		if (hours < 18) {
-			const today = new Date().toISOString();
-			const nomination = {
-				username: match[1],
-				castId: match[2],
-				fid: fid,
-				createdAt: today,
-				weight: state.isPowerBadgeUser ? 3 : 1,
-				roundId: currentRound ? currentRound.id : ""
-			};
-			await votingSystem.nominate(nomination);
-			userNomination = await votingSystem.fetchNominationsByFid(fid);
-			state.didNominate = true;
-		}
-	}
+	userNomination = await createNomination(
+		isValidCast,
+		match,
+		fid,
+		state.isPowerBadgeUser,
+		currentRound!
+	);
 
 	return c.res({
 		image: (

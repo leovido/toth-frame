@@ -1,3 +1,4 @@
+import { client } from "../fetch";
 import { MongoDBService } from "./implementation/MongoDBService";
 import { IDatabaseService } from "./interface/voting";
 import { Nomination, Round } from "./types";
@@ -36,11 +37,6 @@ export class NominationAndVotingSystem {
 	private startNominations(): void {
 		this.nominationOpen = true;
 		console.log("Nominations have started.");
-	}
-
-	private startVoting(): void {
-		this.votes = {}; // Reset votes
-		console.log("Voting has started.");
 	}
 
 	private endVoting(): void {
@@ -120,5 +116,15 @@ export class NominationAndVotingSystem {
 	private displayResults(): void {
 		console.log("Voting Results:");
 		console.log(this.votes);
+	}
+
+	public async verifyCastURL(url: string): Promise<boolean> {
+		try {
+			await client.lookUpCastByHashOrWarpcastUrl(url, "url");
+			return true;
+		} catch (error) {
+			console.error(error);
+			return false;
+		}
 	}
 }
