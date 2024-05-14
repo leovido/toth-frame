@@ -10,9 +10,31 @@ jest.mock("../fetch", () => ({
 	}
 }));
 
-describe("NominationAndVotingSystem", () => {
+describe("Nominations within time range 0:00-18:00 UTC", () => {
 	let system: NominationAndVotingSystem;
 	let mockDbService: MongoDBService;
+
+	const mockDate = new Date("2024-01-01T00:00:00Z");
+
+	beforeAll(() => {
+		// Mock the global Date constructor
+		const RealDate = Date;
+		global.Date = class extends RealDate {
+			constructor() {
+				super();
+				return mockDate;
+			}
+		} as typeof Date;
+
+		// Mock Date.now() as well if used in the code
+		jest.spyOn(Date, "now").mockImplementation(() => mockDate.getTime());
+	});
+
+	afterAll(() => {
+		// Restore the original Date constructor and Date.now() implementation
+		global.Date = Date;
+		jest.spyOn(Date, "now").mockRestore();
+	});
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -23,7 +45,6 @@ describe("NominationAndVotingSystem", () => {
 
 	describe("nominate", () => {
 		it("should allow nomination when nominations are open", async () => {
-			system.nominationOpen = true; // Ensure nominations are open
 			const nominationData = {
 				username: "JohnDoe",
 				castId: "1234",
@@ -38,21 +59,6 @@ describe("NominationAndVotingSystem", () => {
 				...nominationData
 			});
 		});
-
-		it("should not allow nomination when nominations are closed", async () => {
-			system.nominationOpen = false; // Ensure nominations are closed
-			const nominationData = {
-				username: "JohnDoe",
-				castId: "1234",
-				fid: 203666,
-				createdAt: new Date().toISOString(),
-				weight: 3
-			};
-
-			await system.nominate(nominationData);
-
-			expect(mockDbService.addNomination).not.toHaveBeenCalled();
-		});
 	});
 
 	describe("verifyCastURL", () => {
@@ -65,24 +71,54 @@ describe("NominationAndVotingSystem", () => {
 				"url"
 			);
 		});
+	});
+});
 
-		// it("returns false and logs error when URL is invalid", async () => {
-		// 	jest.mock("../fetch", () => ({
-		// 		client: {
-		// 			lookUpCastByHashOrWarpcastUrl: jest
-		// 				.fn()
-		// 				.mockRejectedValue(new Error())
-		// 		}
-		// 	}));
+describe("Nominations outside of time range 18:00-23:59 UTC", () => {
+	let system: NominationAndVotingSystem;
+	let mockDbService: MongoDBService;
 
-		// 	const result = await system.verifyCastURL("http://invalid-url.com");
+	const mockDate = new Date("2024-01-01T18:00:00Z");
 
-		// 	expect(result).toBe(false);
-		// 	expect(client.lookUpCastByHashOrWarpcastUrl).toHaveBeenCalledWith(
-		// 		"http://invalid-url.com",
-		// 		"url"
-		// 	);
-		// 	expect(console.error).toHaveBeenCalledWith(expect.any(Error));
-		// });
+	beforeAll(() => {
+		// Mock the global Date constructor
+		const RealDate = Date;
+		global.Date = class extends RealDate {
+			constructor() {
+				super();
+				return mockDate;
+			}
+		} as typeof Date;
+
+		// Mock Date.now() as well if used in the code
+		jest.spyOn(Date, "now").mockImplementation(() => mockDate.getTime());
+	});
+
+	afterAll(() => {
+		// Restore the original Date constructor and Date.now() implementation
+		global.Date = Date;
+		jest.spyOn(Date, "now").mockRestore();
+	});
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+
+		mockDbService = new MongoDBService();
+		system = new NominationAndVotingSystem(mockDbService);
+	});
+
+	it("should not allow nominations and throw an error", async () => {
+		expect(system.nominationOpen).toBe(false);
+
+		const nominationData = {
+			username: "JohnDoe",
+			castId: "1234",
+			fid: 203666,
+			createdAt: new Date().toISOString(),
+			weight: 3
+		};
+		await expect(system.nominate(nominationData)).rejects.toThrow(
+			"Nominations are closed"
+		);
 	});
 });

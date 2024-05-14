@@ -19,37 +19,16 @@ export class NominationAndVotingSystem {
 		const now = new Date();
 		const hours = now.getUTCHours();
 
-		// TODO: remove hardcoded values to use ROUND nomination/voting start and end times
-		if (hours > 0 && hours < 18) {
-			this.startNominations();
-		}
-
-		if (hours >= 18) {
-			this.nominationOpen = false;
-		} else if (hours === 42 % 24) {
-			this.endVoting();
-		}
-
+		this.nominationOpen = hours >= 0 && hours < 18;
 		this.rounds = await this.db.getCurrentRounds();
 		this.nominations = await this.db.fetchNominations();
-	}
-
-	private startNominations(): void {
-		this.nominationOpen = true;
-		console.log("Nominations have started.");
-	}
-
-	private endVoting(): void {
-		console.log("Voting has ended.");
-		this.displayResults();
 	}
 
 	public async nominate(data: Omit<Nomination, "id">) {
 		if (this.nominationOpen) {
 			await this.db.addNomination(data);
-			console.log(`Nomination received: ${data.username}/${data.castId}`);
 		} else {
-			console.log("Nominations are closed.");
+			throw new Error("Nominations are closed");
 		}
 	}
 
@@ -70,8 +49,7 @@ export class NominationAndVotingSystem {
 
 			return nominations;
 		} catch (error) {
-			console.error(error);
-			throw error;
+			throw new Error(`${error}`);
 		}
 	}
 
@@ -81,8 +59,7 @@ export class NominationAndVotingSystem {
 
 			return nomination;
 		} catch (error) {
-			console.error(error);
-			throw error;
+			throw new Error(`${error}`);
 		}
 	}
 
@@ -92,8 +69,7 @@ export class NominationAndVotingSystem {
 
 			return nomination;
 		} catch (error) {
-			console.error(error);
-			throw error;
+			throw new Error(`${error}`);
 		}
 	}
 	public async fetchNominationsByRound(roundId: string) {
@@ -108,14 +84,8 @@ export class NominationAndVotingSystem {
 
 			return votes;
 		} catch (error) {
-			console.error(error);
-			throw error;
+			throw new Error(`${error}`);
 		}
-	}
-
-	private displayResults(): void {
-		console.log("Voting Results:");
-		console.log(this.votes);
 	}
 
 	public async verifyCastURL(url: string): Promise<boolean> {
@@ -123,7 +93,6 @@ export class NominationAndVotingSystem {
 			await client.lookUpCastByHashOrWarpcastUrl(url, "url");
 			return true;
 		} catch (error) {
-			console.error(error);
 			return false;
 		}
 	}
