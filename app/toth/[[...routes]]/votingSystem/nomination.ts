@@ -11,8 +11,10 @@ export async function createNomination(
 	if (isValidCast && match) {
 		const now = new Date();
 		const hours = now.getUTCHours();
+		const nominationEndTime =
+			currentRound?.nominationEndTime.getUTCHours() ?? 18;
 
-		if (hours < currentRound.nominationEndTime.getUTCHours()) {
+		if (hours < nominationEndTime) {
 			const today = new Date().toISOString();
 			const nomination = {
 				username: match[1],

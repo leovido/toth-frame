@@ -11,7 +11,7 @@ jest.mock("../votingSystem/nominationAndVotingSystem", () => {
 				username: "testUser",
 				castId: "cast123",
 				fid: 203666,
-				createdAt: expect.any(String),
+				createdAt: "2024-01-01T15:00:00.000Z",
 				weight: 1,
 				roundId: "round1"
 			})
@@ -33,7 +33,7 @@ describe("createNomination", () => {
 		status: "nominating",
 		winner: ""
 	};
-	let votingSystem = new NominationAndVotingSystem();
+	let votingSystem;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -48,70 +48,56 @@ describe("createNomination", () => {
 		jest.useRealTimers();
 	});
 
-	it.only("some", async () => {
-		await votingSystem.nominate({
+	it("should successfully create a nomination when all conditions are met", async () => {
+		// Execution
+		const result = await createNomination(
+			true,
+			matchMock,
+			fid,
+			isPowerBadgeUser,
+			currentRound
+		);
+
+		// Assertions
+		expect(result).toEqual({
 			username: "testUser",
 			castId: "cast123",
 			fid: 203666,
-			createdAt: expect.any(String),
-			weight: 1
+			createdAt: "2024-01-01T15:00:00.000Z",
+			weight: 1,
+			roundId: "round1"
 		});
-
-		expect(votingSystem.nominate).toHaveBeenCalled();
-		expect(votingSystem.nominationOpen).toBe(true);
 	});
 
-	// it("should successfully create a nomination when all conditions are met", async () => {
-	// 	// Execution
-	// 	const result = await createNomination(
-	// 		true,
-	// 		matchMock,
-	// 		fid,
-	// 		isPowerBadgeUser,
-	// 		currentRound
-	// 	);
+	it("should return an empty array if the nomination time is past", async () => {
+		// Move time to after the nomination end time
+		jest
+			.useFakeTimers()
+			.setSystemTime(new Date("2024-01-01T20:00:00Z").getTime());
 
-	// 	// Assertions
-	// 	expect(result).toEqual(["nomination1"]);
-	// 	expect(votingSystem.nominate).toHaveBeenCalledWith({
-	// 		username: "testUser",
-	// 		castId: "cast123",
-	// 		fid,
-	// 		createdAt: expect.any(String),
-	// 		weight: 1,
-	// 		roundId: "round1"
-	// 	});
-	// });
+		// Execution
+		const result = await createNomination(
+			true,
+			matchMock,
+			fid,
+			isPowerBadgeUser,
+			currentRound
+		);
 
-	// it("should return an empty array if the nomination time is past", async () => {
-	// 	// Move time to after the nomination end time
-	// 	jest
-	// 		.useFakeTimers()
-	// 		.setSystemTime(new Date("2024-01-01T20:00:00Z").getTime());
+		// Assertions
+		expect(result).toEqual([]);
+	});
 
-	// 	// Execution
-	// 	const result = await createNomination(
-	// 		true,
-	// 		matchMock,
-	// 		fid,
-	// 		isPowerBadgeUser,
-	// 		currentRound
-	// 	);
-
-	// 	// Assertions
-	// 	expect(result).toEqual([]);
-	// });
-
-	// it("should return an empty array if isValidCast is false or match is null", async () => {
-	// 	const result = await createNomination(
-	// 		false,
-	// 		null,
-	// 		fid,
-	// 		isPowerBadgeUser,
-	// 		currentRound
-	// 	);
-	// 	expect(result).toEqual([]);
-	// });
+	it("should return an empty array if isValidCast is false or match is null", async () => {
+		const result = await createNomination(
+			false,
+			null,
+			fid,
+			isPowerBadgeUser,
+			currentRound
+		);
+		expect(result).toEqual([]);
+	});
 
 	// it("should handle errors from votingSystem and return an empty array", async () => {
 	// 	// Setup
