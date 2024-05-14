@@ -24,7 +24,7 @@ export class MongoDBService implements IDatabaseService {
 		return json;
 	}
 
-	async fetchNominationsByFid(fid: number): Promise<Nomination | undefined> {
+	async fetchNominationsByFid(fid: number): Promise<Nomination[]> {
 		const fetchResponse = await fetch(
 			`${process.env.TOTH_API}/nominationsByFid?fid=${fid}` || "",
 			{
