@@ -663,9 +663,7 @@ app.frame("/nominate", async (c) => {
 
 	// fetching one nomination for the day
 	let userNomination = await votingSystem.fetchNominationsByFid(fid);
-	const state = deriveState((previousState) => {
-		previousState.didNominate = userNomination?.length > 0 ?? false;
-	});
+	const state = deriveState(() => {});
 
 	const regex = /https:\/\/warpcast\.com\/([^/]+)\/([^/]+)/;
 	const match = inputText?.match(regex);
@@ -709,7 +707,7 @@ app.frame("/nominate", async (c) => {
 					<h1 style={{ color: "red" }}>Invalid cast, try again</h1>
 				)}
 
-				{!state.didNominate && (
+				{userNomination.length === 0 && (
 					<div style={{ display: "flex", flexDirection: "column" }}>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
 							1. Welcome! ⚡️ users get 3x points on nomination and normal users
@@ -723,7 +721,7 @@ app.frame("/nominate", async (c) => {
 						</h2>
 					</div>
 				)}
-				{state.didNominate && (
+				{userNomination.length > 0 && (
 					<div
 						style={{
 							display: "flex",
@@ -748,7 +746,10 @@ app.frame("/nominate", async (c) => {
 				)}
 			</div>
 		),
-		intents: generateNominateIntents(state.didNominate, state.isPowerBadgeUser)
+		intents: generateNominateIntents(
+			userNomination.length > 0,
+			state.isPowerBadgeUser
+		)
 	});
 });
 
