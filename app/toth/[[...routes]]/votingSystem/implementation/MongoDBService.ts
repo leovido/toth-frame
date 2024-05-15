@@ -117,7 +117,7 @@ export class MongoDBService implements IDatabaseService {
 		nominationId: string,
 		fid: number,
 		roundId: string
-	): Promise<void> {
+	): Promise<Vote> {
 		const data: Vote = {
 			nominationId,
 			createdAt: new Date().toISOString(),
@@ -132,9 +132,9 @@ export class MongoDBService implements IDatabaseService {
 			},
 			body: JSON.stringify(data)
 		});
-		const json = await fetchResponse.json();
+		const json: Vote = await fetchResponse.json();
 
-		return Promise.resolve(json);
+		return json;
 	}
 
 	async getVotingResults(fid: number, roundId: string) {

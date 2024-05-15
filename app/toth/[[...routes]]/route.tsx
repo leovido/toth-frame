@@ -444,8 +444,7 @@ app.frame("/vote", async (c) => {
 
 	const fid = frameData?.fid || 0;
 	const vote = await votingSystem.getVoteResults(fid, roundId || "");
-	console.warn(vote, "here");
-	const theVotedNomination = await votingSystem.fetchNominationById(
+	let theVotedNomination = await votingSystem.fetchNominationById(
 		vote?.nominationId ?? ""
 	);
 	const castId =
@@ -453,11 +452,14 @@ app.frame("/vote", async (c) => {
 	const username =
 		theVotedNomination.length > 0 ? theVotedNomination[0].username : "";
 
-	const responseFetchCast = await client.lookUpCastByHashOrWarpcastUrl(
-		`https://warpcast.com/${username}/${castId}`,
-		"url"
-	);
-	const castText = responseFetchCast.cast.text;
+	const responseFetchCast =
+		username.length > 0
+			? await client.lookUpCastByHashOrWarpcastUrl(
+					`https://warpcast.com/${username}/${castId}`,
+					"url"
+				)
+			: undefined;
+	const castText = responseFetchCast?.cast.text ?? "";
 
 	let hasUserVoted = vote ? true : false;
 
@@ -479,14 +481,18 @@ app.frame("/vote", async (c) => {
 
 	if (buttonValue === "finalVote") {
 		try {
-			await votingSystem.vote(
+			const newVote = await votingSystem.vote(
 				nominations[state.selectedCast].id,
 				fid,
 				roundId || ""
 			);
 			hasUserVoted = true;
+			theVotedNomination = await votingSystem.fetchNominationById(
+				newVote.nominationId ?? ""
+			);
 		} catch (e) {
 			hasUserVoted = false;
+			console.error(`Error in final vote: ${e}`);
 		}
 	}
 
@@ -529,7 +535,7 @@ app.frame("/vote", async (c) => {
 							justifyContent: "center"
 						}}
 					>
-						{theVotedNomination && (
+						{theVotedNomination.length > 0 && (
 							<h1
 								style={{
 									color: "#30E000",
@@ -641,8 +647,11 @@ app.frame("/vote", async (c) => {
 					)
 				]
 			: [
+					<Button key={"refresh"} action="/vote" value="vote">
+						Refresh
+					</Button>,
 					<Button key={"status"} action="/status" value="status">
-						Status
+						Back
 					</Button>
 				]
 	});

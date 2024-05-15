@@ -39,8 +39,10 @@ export class NominationAndVotingSystem {
 	}
 
 	public async vote(nominationId: string, fid: number, roundId: string) {
-		await this.db.recordVote(nominationId, fid, roundId);
+		const vote = await this.db.recordVote(nominationId, fid, roundId);
 		console.log(`Vote received for: ${nominationId} by ${fid}`);
+
+		return vote;
 	}
 
 	public async fetchNominations() {
