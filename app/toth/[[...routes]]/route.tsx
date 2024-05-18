@@ -1,6 +1,8 @@
 /** @jsxImportSource frog/jsx */
 
 import React from "react";
+import axios from "axios";
+import QRCode from "qrcode.react";
 import { Button, Frog, TextInput } from "frog";
 import { devtools } from "frog/dev";
 import { handle } from "frog/next";
@@ -12,8 +14,10 @@ import { client, verifyCastURL } from "./fetch";
 import { Nomination } from "./votingSystem/types";
 import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 import { createNomination } from "./votingSystem/nomination";
+import { FarcasterUser } from "./types";
 
 interface State {
+	fcUser?: FarcasterUser;
 	stateInfo: number;
 	selectedCast: number;
 	didNominate: boolean;
@@ -107,6 +111,9 @@ app.frame("/", async (c) => {
 			</Button>,
 			<Button key={"information"} action="/information" value="information">
 				Information
+			</Button>,
+			<Button key={"signer"} action="/signer" value="signer">
+				Signer
 			</Button>
 			// <Button key={"contribute"} action="/contribute" value="contribute">
 			// 	Contribute
@@ -709,6 +716,116 @@ app.frame("/leaderboard", async (c) => {
 					Autosubscribe
 				</Button>
 			)
+		]
+	});
+});
+
+app.frame("/signer", async (c) => {
+	const { buttonValue, deriveState } = c;
+
+	const LOCAL_STORAGE_KEYS = {
+		FARCASTER_USER: "farcasterUser"
+	};
+
+	const createAndStoreSigner: () => Promise<FarcasterUser> = async () => {
+		try {
+			console.warn("making request...");
+			const response = await axios.post("../../api/signer");
+			if (response.status === 200) {
+				localStorage.setItem(
+					LOCAL_STORAGE_KEYS.FARCASTER_USER,
+					JSON.stringify(response.data)
+				);
+				return response.data;
+			}
+		} catch (error) {
+			console.error("API Call failed", error);
+		}
+	};
+
+	let fcUser: FarcasterUser;
+	console.warn(buttonValue);
+	if (buttonValue === "confirm") {
+		fcUser = await createAndStoreSigner();
+	}
+
+	const state = deriveState((previousState) => {
+		previousState.fcUser = fcUser;
+	});
+	console.warn(state.fcUser);
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					textAlign: "center",
+					width: "100%"
+				}}
+			>
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column"
+					}}
+				>
+					<h1
+						style={{
+							fontFamily: "Space Mono",
+							fontSize: "5rem",
+							color: "#38BDF8"
+						}}
+					>
+						🎩 TOTH - Signers 🎩
+					</h1>
+					{state.fcUser?.status == "loading" && <h1>Loading...</h1>}
+					{state.fcUser?.status == "pending_approval" &&
+						state.fcUser?.signer_approval_url && (
+							<div style={{ display: "flex" }}>
+								<QRCode value={state.fcUser?.signer_approval_url} />
+								<p>OR</p>
+								<a
+									href={state.fcUser?.signer_approval_url}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Click here to view the signer URL (on mobile)
+								</a>
+							</div>
+						)}
+					{state.fcUser === undefined && (
+						<div
+							style={{
+								display: "flex",
+								flexDirection: "column",
+								color: "#30E000",
+								justifyContent: "center"
+							}}
+						>
+							<h1 style={{ fontSize: "2rem" }}>
+								TOTH will cast on your behalf every day to the winner of each
+								round.
+							</h1>
+							<h1 style={{ fontSize: "2rem", color: "red" }}>
+								You can revoke permissions, but this will delete all casts made
+								via TOTH
+							</h1>
+						</div>
+					)}
+				</div>
+			</div>
+		),
+		intents: [
+			<Button key={"confirm"} action={"/signer"} value="confirm">
+				Confirm
+			</Button>
 		]
 	});
 });

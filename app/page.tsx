@@ -1,40 +1,76 @@
-import React from "react";
-import { getFrameMetadata } from "frog/next";
-import type { Metadata } from "next";
+"use client";
 
+import React from "react";
+import axios from "axios";
+import QRCode from "qrcode.react";
+import { useState } from "react";
 import styles from "./page.module.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-	const frameTags = await getFrameMetadata(
-		`${process.env.VERCEL_URL || "http://localhost:3000"}/toth`
-	);
-	return {
-		title: "🎩Tip O' The Hat 🎩",
-		description: "Pool tips, Fund awesomeness",
-		authors: [
-			{
-				name: "@leovido.eth",
-				url: "https://warpcast.com/leovido.eth"
-			},
-			{
-				name: "@papa",
-				url: "https://warpcast.com/papa"
-			},
-			{
-				name: "@0xen",
-				url: "https://warpcast.com/0xen"
-			}
-		],
-		applicationName: "Tip O' The Hat frame",
-		creator: "@leovido.eth, @papa, @0xen",
-		other: frameTags
-	};
+interface FarcasterUser {
+	signer_uuid: string;
+	public_key: string;
+	status: string;
+	signer_approval_url?: string;
+	fid?: number;
 }
 
 export default function Home() {
+	const LOCAL_STORAGE_KEYS = {
+		FARCASTER_USER: "farcasterUser"
+	};
+	const [loading, setLoading] = useState(false);
+	const [farcasterUser, setFarcasterUser] = useState<FarcasterUser | null>(
+		null
+	);
+
+	const handleSignIn = async () => {
+		setLoading(true);
+		await createAndStoreSigner();
+		setLoading(false);
+	};
+
+	const createAndStoreSigner = async () => {
+		try {
+			const response = await axios.post("/api/signer");
+			if (response.status === 200) {
+				localStorage.setItem(
+					LOCAL_STORAGE_KEYS.FARCASTER_USER,
+					JSON.stringify(response.data)
+				);
+				setFarcasterUser(response.data);
+			}
+		} catch (error) {
+			console.error("API Call failed", error);
+		}
+	};
+
 	return (
-		<main className={styles.main}>
-			<h1 style={{ color: "white" }}>🎩Tip O&apos; The Hat🎩</h1>
-		</main>
+		<div className={styles.container}>
+			{!farcasterUser?.status && (
+				<button
+					className={styles.btn}
+					onClick={handleSignIn}
+					disabled={loading}
+				>
+					{loading ? "Loading..." : "Sign in with farcaster"}
+				</button>
+			)}
+
+			{farcasterUser?.status == "pending_approval" &&
+				farcasterUser?.signer_approval_url && (
+					<div className={styles.qrContainer}>
+						<QRCode value={farcasterUser.signer_approval_url} />
+						<div className={styles.or}>OR</div>
+						<a
+							href={farcasterUser.signer_approval_url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={styles.link}
+						>
+							Click here to view the signer URL (on mobile)
+						</a>
+					</div>
+				)}
+		</div>
 	);
 }
