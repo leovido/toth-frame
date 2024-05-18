@@ -204,6 +204,247 @@ app.frame("/infoVotes", async (c) => {
 	});
 });
 
+app.frame("/lore", async (c) => {
+	const { deriveState, buttonValue } = c;
+
+	const state = deriveState((previousState) => {
+		if (buttonValue === "more") {
+			previousState.stateInfo = 1;
+		} else if (buttonValue === "information") {
+			previousState.stateInfo = 0;
+		}
+	});
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					textAlign: "center",
+					width: "100%",
+					paddingLeft: 20,
+					paddingRight: 20
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8",
+						paddingLeft: 20,
+						paddingRight: 20,
+						justifyContent: "center"
+					}}
+				>
+					🎩 TOTH - Lore 🎩
+				</h1>
+
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						margin: "auto",
+						marginBottom: -20,
+						textAlign: "center"
+					}}
+				>
+					-1-
+				</h2>
+
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					TOTH is built on trust and was first initiated by 0xen as a means to
+					encourage and reward experimentation + building on Farcaster
+				</h2>
+
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						margin: "auto",
+						marginBottom: -20,
+						textAlign: "center"
+					}}
+				>
+					-2-
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					This first version seeks to explore helpful ways to make it easy to do
+					so using native FC actions
+				</h2>
+
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						margin: "auto",
+						marginBottom: -20,
+						textAlign: "center"
+					}}
+				>
+					-3-
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					For feedback, suggestions, and more information please contact the
+					doxxed dev
+				</h2>
+				<h2
+					style={{
+						fontSize: "2rem",
+						color: "#38BDF8",
+						fontWeight: 400,
+						paddingLeft: 20,
+						paddingRight: 20,
+						justifyContent: "center",
+						marginBottom: -20
+					}}
+				>
+					Team on FC: @leovido.eth | @papa | @tipothehat
+				</h2>
+
+				<h2
+					style={{
+						fontSize: "2rem",
+						color: "#30E000",
+						fontWeight: 400,
+						paddingLeft: 20,
+						paddingRight: 20,
+						justifyContent: "center"
+					}}
+				>
+					Twitter:@degentoth | Email: degentoth@gmail.com
+				</h2>
+			</div>
+		),
+		intents: generateIntentsInfo(state.stateInfo, false)
+	});
+});
+
+app.frame("/rewards", async (c) => {
+	const { deriveState, buttonValue } = c;
+
+	const state = deriveState((previousState) => {
+		if (buttonValue === "more") {
+			previousState.stateInfo = 1;
+		} else if (buttonValue === "information") {
+			previousState.stateInfo = 0;
+		}
+	});
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					textAlign: "justify",
+					width: "100%",
+					paddingLeft: 20,
+					paddingRight: 20
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8",
+						paddingLeft: 20,
+						paddingRight: 20,
+						justifyContent: "center"
+					}}
+				>
+					🎩 TOTH - Rewards 🎩
+				</h1>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					1. 90% of TOTH to cast creator/builder(s)
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					2. 5% of TOTH to power badge holders & vetted council that voted at
+					least four times in a week (split between them)
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					3. 5% of TOTH to dev team for ongoing maintenance and improvements
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					4. If a TOTH is invalidated by the final council (e.g. a known bot)
+					that TOTH reward will be put in a public admin treasury to be
+					distributed as a bonus across the next 10 winners
+				</h2>
+			</div>
+		),
+		intents: generateIntentsInfo(state.stateInfo, false)
+	});
+});
+
 app.frame("/infoNoms", async (c) => {
 	const { deriveState, buttonValue } = c;
 
@@ -236,7 +477,8 @@ app.frame("/infoNoms", async (c) => {
 					style={{
 						fontFamily: "Space Mono",
 						fontSize: "5rem",
-						color: "#38BDF8"
+						color: "#38BDF8",
+						justifyContent: "center"
 					}}
 				>
 					🎩 TOTH - Nominations 🎩
@@ -1305,7 +1547,7 @@ const generateIntentsInfo = (infoPage: number, goToIntro: boolean) => {
 			<Button key={"information"} action="/information" value="information">
 				⬅️
 			</Button>,
-			<Button key={"rewards"} action="/ewards" value="rewards">
+			<Button key={"rewards"} action="/rewards" value="rewards">
 				Rewards
 			</Button>,
 			<Button key={"lore"} action="/lore" value="lore">
