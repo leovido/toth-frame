@@ -25,7 +25,7 @@ interface State {
 }
 
 const app = new Frog<{ State: State }>({
-	verify: false,
+	verify: process.env.CONFIG === "PROD",
 	initialState: {
 		stateInfo: 0,
 		selectedCast: 0,
@@ -107,13 +107,13 @@ app.frame("/", async (c) => {
 			</Button>,
 			<Button key={"information"} action="/information" value="information">
 				Information
-			</Button>,
-			<Button key={"contribute"} action="/contribute" value="contribute">
-				Contribute
-			</Button>,
-			<Button key={"settings"} action="/settings" value="settings">
-				Settings
 			</Button>
+			// <Button key={"contribute"} action="/contribute" value="contribute">
+			// 	Contribute
+			// </Button>,
+			// <Button key={"settings"} action="/settings" value="settings">
+			// 	Settings
+			// </Button>
 		]
 	});
 });
