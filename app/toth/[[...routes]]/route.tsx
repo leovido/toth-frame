@@ -14,6 +14,7 @@ import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 import { createNomination } from "./votingSystem/nomination";
 
 interface State {
+	stateInfo: number;
 	selectedCast: number;
 	didNominate: boolean;
 	totalDegen: number;
@@ -24,7 +25,9 @@ interface State {
 }
 
 const app = new Frog<{ State: State }>({
+	verify: false,
 	initialState: {
+		stateInfo: 0,
 		selectedCast: 0,
 		totalDegen: 0,
 		dollarValue: "0",
@@ -101,8 +104,298 @@ app.frame("/", async (c) => {
 		intents: [
 			<Button key={"status"} action="/status" value="status">
 				Status
+			</Button>,
+			<Button key={"information"} action="/information" value="information">
+				Information
+			</Button>,
+			<Button key={"contribute"} action="/contribute" value="contribute">
+				Contribute
+			</Button>,
+			<Button key={"settings"} action="/settings" value="settings">
+				Settings
 			</Button>
 		]
+	});
+});
+
+app.frame("/infoVotes", async (c) => {
+	const { deriveState, buttonValue } = c;
+
+	const state = deriveState((previousState) => {
+		if (buttonValue === "more") {
+			previousState.stateInfo = 1;
+		} else if (buttonValue === "information") {
+			previousState.stateInfo = 0;
+		}
+	});
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					justifyContent: "center",
+					textAlign: "center",
+					width: "100%",
+					paddingLeft: 20,
+					paddingRight: 20
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8"
+					}}
+				>
+					🎩 TOTH - Voting 🎩
+				</h1>
+				<h2 style={{ fontSize: "1.8rem", color: "#D6FFF6", fontWeight: 400 }}>
+					1. Only Power Badge holders can vote (once per round) at this stage
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400
+					}}
+				>
+					2. Voting opens 6 PM the day before & closes at 6 PM on the TOTH day
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400
+					}}
+				>
+					3. From 6pm to midnight of TOTH day a vetted council of OGs, previous
+					TOTH winners & the dev team review the top-voted cast for anomalies
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400
+					}}
+				>
+					4. If more vote &quot;no&quot; than &quot;yes,&quot; the TOTH is
+					invalidated and rolls over
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400
+					}}
+				>
+					5. By default, the entire TOTH goes to the cast creator
+				</h2>
+			</div>
+		),
+		intents: generateIntentsInfo(state.stateInfo, false)
+	});
+});
+
+app.frame("/infoNoms", async (c) => {
+	const { deriveState, buttonValue } = c;
+
+	const state = deriveState((previousState) => {
+		if (buttonValue === "more") {
+			previousState.stateInfo = 1;
+		} else if (buttonValue === "information") {
+			previousState.stateInfo = 0;
+		}
+	});
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					textAlign: "justify",
+					width: "100%",
+					paddingLeft: 20,
+					paddingRight: 20
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8"
+					}}
+				>
+					🎩 TOTH - Nominations 🎩
+				</h1>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						textAlign: "justify",
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					1. Insert (copy/paste) a cast hyperlink to nominate that cast for the
+					current TOTH cycle/round reward
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						textAlign: "justify",
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					2. Anyone can nominate one cast per day by clicking the
+					&quot;Nominate&quot; button, Power badge holders have tripled
+					nomination power. Total nominations are tallied on a “status”
+					leaderboard.
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						textAlign: "justify",
+						paddingLeft: 20,
+						paddingRight: 20
+					}}
+				>
+					3. Nominations open midnight the day before the TOTH & close at 6 PM,
+					Only the top 3 nominated casts proceed to the voting stage
+				</h2>
+			</div>
+		),
+		intents: generateIntentsInfo(state.stateInfo, false)
+	});
+});
+
+app.frame("/information", async (c) => {
+	const { deriveState, buttonValue } = c;
+
+	const state = deriveState((previousState) => {
+		if (buttonValue === "more") {
+			previousState.stateInfo = 1;
+		} else if (buttonValue === "information") {
+			previousState.stateInfo = 0;
+		}
+	});
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					justifyContent: "center",
+					textAlign: "center",
+					width: "100%",
+					paddingLeft: 20,
+					paddingRight: 20
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8"
+					}}
+				>
+					🎩 TOTH - Info 🎩
+				</h1>
+				<h2 style={{ fontSize: "1.8rem", color: "#D6FFF6", fontWeight: 400 }}>
+					Farcaster community coming together to:
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400
+					}}
+				>
+					- Promote and reward exceptional content or contributions
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						marginTop: -16
+					}}
+				>
+					- Pool tips to create more significant collective impact
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						marginTop: -16
+					}}
+				>
+					- Incentivize quality and meaningful work by builders and creators
+				</h2>
+
+				<h2 style={{ fontSize: "1.8rem", color: "#D6FFF6", fontWeight: 400 }}>
+					This tool has been built to enable:
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400
+					}}
+				>
+					- Nomination and voting of the most deserving casts daily
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						marginTop: -16
+					}}
+				>
+					- Combine individual tips into larger, more impactful rewards
+				</h2>
+				<h2
+					style={{
+						fontSize: "1.8rem",
+						color: "#D6FFF6",
+						fontWeight: 400,
+						marginTop: -16,
+						paddingBottom: 8
+					}}
+				>
+					- Confer pooled rewards to selected cast creators or contributors
+				</h2>
+			</div>
+		),
+		intents: generateIntentsInfo(state.stateInfo, true)
 	});
 });
 
@@ -321,6 +614,9 @@ app.frame("/status", async (c) => {
 			</div>
 		),
 		intents: [
+			<Button key={"intro"} action="/" value="intro">
+				Intro
+			</Button>,
 			isNominationRound && !state.didNominate && (
 				<Button key={"nominate"} action="/nominate" value="nominate">
 					Nominate
@@ -333,16 +629,7 @@ app.frame("/status", async (c) => {
 			),
 			<Button key={"leaderboard"} action="/leaderboard" value="leaderboard">
 				Leaderboard
-			</Button>,
-			false && (
-				<Button
-					key={"autosubscribe"}
-					action="/autosubscribe"
-					value="autosubscribe"
-				>
-					Autosubscribe
-				</Button>
-			)
+			</Button>
 		]
 	});
 });
@@ -991,4 +1278,39 @@ const formattedNominations = (nominations: Nomination[]) => {
 	return {
 		formatted
 	};
+};
+
+const generateIntentsInfo = (infoPage: number, goToIntro: boolean) => {
+	if (infoPage === 0) {
+		return [
+			<Button
+				key={"back"}
+				action={goToIntro ? "/" : "/information"}
+				value="back"
+			>
+				⬅️
+			</Button>,
+			<Button key={"infoNoms"} action="/infoNoms" value="infoNoms">
+				Nominations
+			</Button>,
+			<Button key={"infoVotes"} action="/infoVotes" value="infoVotes">
+				Votes
+			</Button>,
+			<Button key={"more"} action="/information" value="more">
+				➡️
+			</Button>
+		];
+	} else {
+		return [
+			<Button key={"information"} action="/information" value="information">
+				⬅️
+			</Button>,
+			<Button key={"rewards"} action="/ewards" value="rewards">
+				Rewards
+			</Button>,
+			<Button key={"lore"} action="/lore" value="lore">
+				Lore
+			</Button>
+		];
+	}
 };
