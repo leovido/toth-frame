@@ -1,7 +1,6 @@
 /** @jsxImportSource frog/jsx */
 
 import React from "react";
-import QRCode from "qrcode.react";
 import { Button, Frog, TextInput } from "frog";
 import { devtools } from "frog/dev";
 import { handle } from "frog/next";
