@@ -720,7 +720,7 @@ app.frame("/leaderboard", async (c) => {
 });
 
 app.frame("/signer", async (c) => {
-	const { buttonValue, deriveState } = c;
+	const { buttonValue } = c;
 
 	const createAndStoreSigner: () => Promise<Signer | undefined> = async () => {
 		try {
