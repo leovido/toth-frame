@@ -1,7 +1,6 @@
 /** @jsxImportSource frog/jsx */
 
 import React from "react";
-import axios from "axios";
 import QRCode from "qrcode.react";
 import { Button, Frog, TextInput } from "frog";
 import { devtools } from "frog/dev";
@@ -14,10 +13,11 @@ import { client, verifyCastURL } from "./fetch";
 import { Nomination } from "./votingSystem/types";
 import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 import { createNomination } from "./votingSystem/nomination";
-import { FarcasterUser } from "./types";
+import { getSignedKey } from "@/utils/getSignedKey";
+import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 
 interface State {
-	fcUser?: FarcasterUser;
+	fcUser?: Signer;
 	stateInfo: number;
 	selectedCast: number;
 	didNominate: boolean;
@@ -29,7 +29,7 @@ interface State {
 }
 
 const app = new Frog<{ State: State }>({
-	verify: process.env.CONFIG === "PROD",
+	verify: false,
 	initialState: {
 		stateInfo: 0,
 		selectedCast: 0,
@@ -723,36 +723,23 @@ app.frame("/leaderboard", async (c) => {
 app.frame("/signer", async (c) => {
 	const { buttonValue, deriveState } = c;
 
-	const LOCAL_STORAGE_KEYS = {
-		FARCASTER_USER: "farcasterUser"
-	};
-
-	const createAndStoreSigner: () => Promise<FarcasterUser> = async () => {
+	const createAndStoreSigner: () => Promise<Signer | undefined> = async () => {
 		try {
-			console.warn("making request...");
-			const response = await axios.post("../../api/signer");
-			if (response.status === 200) {
-				localStorage.setItem(
-					LOCAL_STORAGE_KEYS.FARCASTER_USER,
-					JSON.stringify(response.data)
-				);
-				return response.data;
-			}
+			const response = await getSignedKey();
+
+			return response;
 		} catch (error) {
 			console.error("API Call failed", error);
 		}
 	};
 
-	let fcUser: FarcasterUser;
-	console.warn(buttonValue);
+	let fcUser;
+
 	if (buttonValue === "confirm") {
 		fcUser = await createAndStoreSigner();
-	}
 
-	const state = deriveState((previousState) => {
-		previousState.fcUser = fcUser;
-	});
-	console.warn(state.fcUser);
+		console.warn(fcUser);
+	}
 
 	return c.res({
 		image: (
@@ -773,7 +760,8 @@ app.frame("/signer", async (c) => {
 				<div
 					style={{
 						display: "flex",
-						flexDirection: "column"
+						flexDirection: "column",
+						justifyContent: "center"
 					}}
 				>
 					<h1
@@ -785,28 +773,26 @@ app.frame("/signer", async (c) => {
 					>
 						🎩 TOTH - Signers 🎩
 					</h1>
-					{state.fcUser?.status == "loading" && <h1>Loading...</h1>}
-					{state.fcUser?.status == "pending_approval" &&
-						state.fcUser?.signer_approval_url && (
-							<div style={{ display: "flex" }}>
-								<QRCode value={state.fcUser?.signer_approval_url} />
-								<p>OR</p>
-								<a
-									href={state.fcUser?.signer_approval_url}
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									Click here to view the signer URL (on mobile)
-								</a>
-							</div>
-						)}
-					{state.fcUser === undefined && (
+					{/* <div style={{ display: "flex" }}>
+						<QRCode value={fcUser?.signer_approval_url || ""} />
+						<p>OR</p>
+						<a
+							href={fcUser?.signer_approval_url}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Click here to view the signer URL (on mobile)
+						</a>
+					</div> */}
+					{fcUser === undefined && (
 						<div
 							style={{
 								display: "flex",
 								flexDirection: "column",
 								color: "#30E000",
-								justifyContent: "center"
+								justifyContent: "center",
+								paddingLeft: 24,
+								paddingRight: 24
 							}}
 						>
 							<h1 style={{ fontSize: "2rem" }}>
@@ -823,15 +809,61 @@ app.frame("/signer", async (c) => {
 			</div>
 		),
 		intents: [
-			<Button key={"confirm"} action={"/signer"} value="confirm">
-				Confirm
-			</Button>
+			fcUser === undefined && (
+				<Button key={"confirm"} action={"/signer"} value="confirm">
+					Confirm
+				</Button>
+			),
+			fcUser !== undefined && (
+				<Button.Link key={"confirm"} href={fcUser?.signer_approval_url || ""}>
+					Sign in
+				</Button.Link>
+			)
 		]
 	});
 });
 
 app.frame("/status", async (c) => {
-	const { frameData, deriveState } = c;
+	const { frameData, deriveState, verified } = c;
+
+	if (!verified) {
+		console.log(`Frame verification failed for ${frameData?.fid}`);
+		return c.res({
+			image: (
+				<div
+					style={{
+						fontFamily: "Open Sans",
+						alignItems: "center",
+						background: "linear-gradient(to right, #231651, #17101F)",
+						backgroundSize: "100% 100%",
+						display: "flex",
+						flexDirection: "column",
+						flexWrap: "nowrap",
+						height: "100%",
+						justifyContent: "center",
+						textAlign: "center",
+						width: "100%"
+					}}
+				>
+					<p
+						style={{
+							fontFamily: "Open Sans",
+							fontWeight: 700,
+							fontSize: 45,
+							color: "#D6FFF6"
+						}}
+					>
+						Something went wrong
+					</p>
+				</div>
+			),
+			intents: [
+				<Button key={"restart"} action="/">
+					Restart
+				</Button>
+			]
+		});
+	}
 
 	const fid = frameData?.fid ?? 0;
 

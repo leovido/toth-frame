@@ -1,4 +1,4 @@
-import { getSignedKey } from "@/utils/getSignedKey";
+import { getSignedKey } from "../../../utils/getSignedKey";
 import { NextResponse } from "next/server";
 
 export async function POST() {
