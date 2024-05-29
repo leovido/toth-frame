@@ -28,7 +28,7 @@ interface State {
 }
 
 const app = new Frog<{ State: State }>({
-	verify: process.env.CONFIG === "PROD",
+	verify: false,
 	initialState: {
 		stateInfo: 0,
 		selectedCast: 0,
@@ -724,6 +724,9 @@ app.frame("/signer", async (c) => {
 
 	const fid = frameData?.fid ?? 0;
 	const userHasSigner = await votingSystem.fetchSigner(fid);
+	const isSignerVerified = await client.lookupDeveloperManagedSigner(
+		userHasSigner.public_key
+	);
 
 	return c.res({
 		image: (
@@ -735,6 +738,7 @@ app.frame("/signer", async (c) => {
 					backgroundSize: "100% 100%",
 					display: "flex",
 					flexDirection: "column",
+					justifyContent: "center",
 					flexWrap: "nowrap",
 					height: "100%",
 					textAlign: "center",
@@ -744,8 +748,7 @@ app.frame("/signer", async (c) => {
 				<div
 					style={{
 						display: "flex",
-						flexDirection: "column",
-						justifyContent: "center"
+						flexDirection: "column"
 					}}
 				>
 					<h1
@@ -778,7 +781,7 @@ app.frame("/signer", async (c) => {
 							</h1>
 						</div>
 					)}
-					{userHasSigner && userHasSigner.status === "approved" && (
+					{isSignerVerified && isSignerVerified.status === "approved" && (
 						<div
 							style={{
 								display: "flex",
@@ -810,10 +813,10 @@ app.frame("/signer", async (c) => {
 			>
 				Confirm
 			</Button>,
-			userHasSigner && userHasSigner.status === "pending_approval" && (
+			isSignerVerified && isSignerVerified.status === "pending_approval" && (
 				<Button.Link
 					key={"confirm"}
-					href={userHasSigner.signer_approval_url || ""}
+					href={isSignerVerified.signer_approval_url || ""}
 				>
 					Sign in
 				</Button.Link>
