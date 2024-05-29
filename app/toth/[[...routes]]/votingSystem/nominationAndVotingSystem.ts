@@ -1,3 +1,4 @@
+import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { client } from "../fetch";
 import { MongoDBService } from "./implementation/MongoDBService";
 import { IDatabaseService } from "./interface/voting";
@@ -30,6 +31,10 @@ export class NominationAndVotingSystem {
 		} else {
 			throw new Error("Nominations are closed");
 		}
+	}
+
+	public async storeSigner(fid: number, data: Signer) {
+		await this.db.storeSigner(fid, data);
 	}
 
 	public async getCurrentRounds() {

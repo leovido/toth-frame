@@ -3,6 +3,7 @@ import { ViemLocalEip712Signer } from "@farcaster/hub-nodejs";
 import { bytesToHex, hexToBytes } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { getFid } from "./getFid";
+import { votingSystem } from "@/app/toth/[[...routes]]/client";
 
 export const getSignedKey = async () => {
 	const createSigner = await client.createSigner();

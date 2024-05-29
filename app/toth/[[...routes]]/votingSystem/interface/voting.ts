@@ -1,3 +1,4 @@
+import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { Nomination, Vote, Round } from "../types";
 
 export interface IDatabaseService {
@@ -11,4 +12,5 @@ export interface IDatabaseService {
 	fetchNominationsByRound(roundId: string): Promise<Nomination[]>;
 	fetchNominationsByFid(fid: number): Promise<Nomination[]>;
 	fetchNominationById(id: string): Promise<Nomination[]>;
+	storeSigner(fid: number, data: Signer): Promise<unknown>;
 }

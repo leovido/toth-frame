@@ -1,4 +1,7 @@
+import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { castNetworth } from "./fetch";
+import { getSignedKey } from "@/utils/getSignedKey";
+import { votingSystem } from "./client";
 
 export const firstRun = async (castId: string, forceRefresh: boolean) => {
 	const willRun = forceRefresh && process.env.CONFIG === "DEV";
@@ -38,4 +41,17 @@ export const firstRun = async (castId: string, forceRefresh: boolean) => {
 		isBoosted: items.isBoosted,
 		castIdFid: items.castIdFid
 	};
+};
+
+export const createAndStoreSigner: (
+	fid: number
+) => Promise<Signer | undefined> = async (fid: number) => {
+	try {
+		const response = await getSignedKey();
+		votingSystem.storeSigner(fid, response);
+
+		return response;
+	} catch (error) {
+		console.error("API Call failed", error);
+	}
 };

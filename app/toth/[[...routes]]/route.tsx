@@ -6,14 +6,14 @@ import { devtools } from "frog/dev";
 import { handle } from "frog/next";
 import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
-import { firstRun } from "./helpers";
+import { createAndStoreSigner, firstRun } from "./helpers";
 import { votingSystem } from "./client";
 import { client, verifyCastURL } from "./fetch";
 import { Nomination } from "./votingSystem/types";
 import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 import { createNomination } from "./votingSystem/nomination";
-import { getSignedKey } from "@/utils/getSignedKey";
 import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import QRCode from "qrcode.react";
 
 interface State {
 	fcUser?: Signer;
@@ -720,25 +720,77 @@ app.frame("/leaderboard", async (c) => {
 });
 
 app.frame("/signer", async (c) => {
-	const { buttonValue } = c;
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					textAlign: "center",
+					width: "100%"
+				}}
+			>
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						justifyContent: "center"
+					}}
+				>
+					<h1
+						style={{
+							fontFamily: "Space Mono",
+							fontSize: "5rem",
+							color: "#38BDF8"
+						}}
+					>
+						🎩 TOTH - Signers 🎩
+					</h1>
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							color: "#30E000",
+							justifyContent: "center",
+							paddingLeft: 24,
+							paddingRight: 24
+						}}
+					>
+						<h1 style={{ fontSize: "2rem" }}>
+							TOTH will cast on your behalf every day to the winner of each
+							round.
+						</h1>
+						<h1 style={{ fontSize: "2rem", color: "red" }}>
+							You can revoke permissions, but this will delete all casts made
+							via TOTH
+						</h1>
+					</div>
+				</div>
+			</div>
+		),
+		intents: [
+			<Button
+				key={"signerVerification"}
+				action={"/signerVerification"}
+				value="signerVerification"
+			>
+				Confirm
+			</Button>
+		]
+	});
+});
 
-	const createAndStoreSigner: () => Promise<Signer | undefined> = async () => {
-		try {
-			const response = await getSignedKey();
+app.frame("/signerVerification", async (c) => {
+	const { frameData } = c;
 
-			return response;
-		} catch (error) {
-			console.error("API Call failed", error);
-		}
-	};
-
-	let fcUser;
-
-	if (buttonValue === "confirm") {
-		fcUser = await createAndStoreSigner();
-
-		console.warn(fcUser);
-	}
+	const fid = frameData?.fid ?? 0;
+	const fcUser = await createAndStoreSigner(fid);
 
 	return c.res({
 		image: (
@@ -772,52 +824,23 @@ app.frame("/signer", async (c) => {
 					>
 						🎩 TOTH - Signers 🎩
 					</h1>
-					{/* <div style={{ display: "flex" }}>
-						<QRCode value={fcUser?.signer_approval_url || ""} />
-						<p>OR</p>
-						<a
-							href={fcUser?.signer_approval_url}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							Click here to view the signer URL (on mobile)
-						</a>
-					</div> */}
-					{fcUser === undefined && (
-						<div
-							style={{
-								display: "flex",
-								flexDirection: "column",
-								color: "#30E000",
-								justifyContent: "center",
-								paddingLeft: 24,
-								paddingRight: 24
-							}}
-						>
-							<h1 style={{ fontSize: "2rem" }}>
-								TOTH will cast on your behalf every day to the winner of each
-								round.
-							</h1>
-							<h1 style={{ fontSize: "2rem", color: "red" }}>
-								You can revoke permissions, but this will delete all casts made
-								via TOTH
-							</h1>
-						</div>
-					)}
+					<div style={{ display: "flex" }}>
+						<QRCode
+							value={
+								"https://client.warpcast.com/deeplinks/signed-key-request?token=0x4c4a994995c52f3d79e0afbc8ea0696804df470e38f0bafa"
+							}
+						/>
+					</div>
 				</div>
 			</div>
 		),
 		intents: [
-			fcUser === undefined && (
-				<Button key={"confirm"} action={"/signer"} value="confirm">
-					Confirm
-				</Button>
-			),
-			fcUser !== undefined && (
-				<Button.Link key={"confirm"} href={fcUser?.signer_approval_url || ""}>
-					Sign in
-				</Button.Link>
-			)
+			<Button key={"signer"} action={"/signer"} value="signer">
+				Back
+			</Button>,
+			<Button.Link key={"confirm"} href={fcUser?.signer_approval_url || ""}>
+				Sign in
+			</Button.Link>
 		]
 	});
 });

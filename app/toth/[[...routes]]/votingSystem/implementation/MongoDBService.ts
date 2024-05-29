@@ -1,12 +1,41 @@
 import { randomUUID } from "crypto";
 import { IDatabaseService } from "../interface/voting";
 import { Nomination, Vote, Round } from "../types";
-
+import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 export class MongoDBService implements IDatabaseService {
 	public nominations: Nomination[] = [];
 	public votes: Vote[] = [];
 
 	constructor() {}
+
+	async storeSigner(fid: number, data: Signer) {
+		const apiUrl = process.env.TOTH_API
+			? `${process.env.TOTH_API}/signers`
+			: "";
+
+		try {
+			const fetchResponse = await fetch(apiUrl, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					id: randomUUID(),
+					fid,
+					...data
+				})
+			});
+
+			if (!fetchResponse.ok) {
+				throw new Error(`Failed to fetch results: ${fetchResponse.status}`);
+			}
+
+			return;
+		} catch (error) {
+			console.error("Error storing signer:", error);
+			throw error;
+		}
+	}
 
 	async fetchNominationsByRound(roundId: string): Promise<Nomination[]> {
 		const fetchResponse = await fetch(
