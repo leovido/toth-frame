@@ -760,7 +760,7 @@ app.frame("/signer", async (c) => {
 					>
 						🎩 TOTH - Signers 🎩
 					</h1>
-					{userHasSigner && userHasSigner.status !== "approved" && (
+					{isSignerVerified && isSignerVerified.status !== "approved" && (
 						<div
 							style={{
 								display: "flex",
