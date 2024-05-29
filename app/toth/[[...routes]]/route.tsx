@@ -720,6 +720,11 @@ app.frame("/leaderboard", async (c) => {
 });
 
 app.frame("/signer", async (c) => {
+	const { frameData } = c;
+
+	const fid = frameData?.fid ?? 0;
+	const userHasSigner = await votingSystem.fetchSigner(fid);
+
 	return c.res({
 		image: (
 			<div
@@ -752,36 +757,67 @@ app.frame("/signer", async (c) => {
 					>
 						🎩 TOTH - Signers 🎩
 					</h1>
-					<div
-						style={{
-							display: "flex",
-							flexDirection: "column",
-							color: "#30E000",
-							justifyContent: "center",
-							paddingLeft: 24,
-							paddingRight: 24
-						}}
-					>
-						<h1 style={{ fontSize: "2rem" }}>
-							TOTH will cast on your behalf every day to the winner of each
-							round.
-						</h1>
-						<h1 style={{ fontSize: "2rem", color: "red" }}>
-							You can revoke permissions, but this will delete all casts made
-							via TOTH
-						</h1>
-					</div>
+					{userHasSigner && userHasSigner.status !== "approved" && (
+						<div
+							style={{
+								display: "flex",
+								flexDirection: "column",
+								color: "#30E000",
+								justifyContent: "center",
+								paddingLeft: 24,
+								paddingRight: 24
+							}}
+						>
+							<h1 style={{ fontSize: "2rem" }}>
+								TOTH will cast on your behalf every day to the winner of each
+								round.
+							</h1>
+							<h1 style={{ fontSize: "2rem", color: "red" }}>
+								You can revoke permissions, but this will delete all casts made
+								via TOTH
+							</h1>
+						</div>
+					)}
+					{userHasSigner && userHasSigner.status === "approved" && (
+						<div
+							style={{
+								display: "flex",
+								flexDirection: "column",
+								color: "#30E000",
+								justifyContent: "center",
+								paddingLeft: 24,
+								paddingRight: 24
+							}}
+						>
+							<h1 style={{ fontSize: "2rem" }}>
+								TOTH will cast on your behalf to the winner of each round. You
+								can cancel at any time going to settings {">"} Advanced {">"}{" "}
+								Manage connected apps {">"} Delete @tipothehat
+							</h1>
+						</div>
+					)}
 				</div>
 			</div>
 		),
 		intents: [
+			<Button key={"back"} action={"/"} value="back">
+				Back
+			</Button>,
 			<Button
 				key={"signerVerification"}
 				action={"/signerVerification"}
 				value="signerVerification"
 			>
 				Confirm
-			</Button>
+			</Button>,
+			userHasSigner && userHasSigner.status === "pending_approval" && (
+				<Button.Link
+					key={"confirm"}
+					href={userHasSigner.signer_approval_url || ""}
+				>
+					Sign in
+				</Button.Link>
+			)
 		]
 	});
 });

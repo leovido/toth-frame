@@ -33,6 +33,16 @@ export class NominationAndVotingSystem {
 		}
 	}
 
+	public async fetchSigner(fid: number) {
+		try {
+			const signer = await this.db.fetchSigner(fid);
+
+			return signer;
+		} catch (error) {
+			throw new Error(`${error}`);
+		}
+	}
+
 	public async storeSigner(fid: number, data: Signer) {
 		await this.db.storeSigner(fid, data);
 	}
