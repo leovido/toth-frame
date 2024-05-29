@@ -1271,7 +1271,9 @@ app.frame("/vote", async (c) => {
 							display: "flex",
 							flexDirection: "column",
 							color: "#30E000",
-							justifyContent: "center"
+							justifyContent: "center",
+							paddingLeft: 24,
+							paddingRight: 24
 						}}
 					>
 						{theVotedNomination.length > 0 && (
