@@ -10,7 +10,7 @@ export class MongoDBService implements IDatabaseService {
 
 	async fetchSigner(fid: number): Promise<Signer> {
 		const apiUrl = process.env.TOTH_API
-			? `${process.env.TOTH_API}/signers/${fid}`
+			? `${process.env.TOTH_API}/signers?fid=${fid}`
 			: "";
 
 		try {
