@@ -11,8 +11,8 @@ import {
 	fetchOrCreateAndVerifySigner,
 	firstRun
 } from "./helpers";
-import { votingSystem } from "./client";
-import { client, verifyCastURL } from "./fetch";
+import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
+import { client, postCast, verifyCastURL } from "./client";
 import { Nomination } from "./votingSystem/types";
 import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 import { createNomination } from "./votingSystem/nomination";
@@ -780,6 +780,14 @@ app.frame("/signer", async (c) => {
 
 	const fid = frameData?.fid ?? 0;
 	const signer = await fetchOrCreateAndVerifySigner(fid);
+
+	await postCast(
+		signer.signer_uuid,
+		"Testing something. 1 DEGEN",
+		"0xab063bfd"
+	).catch((error) => {
+		console.error("Error posting cast", error);
+	});
 
 	return c.res({
 		image: (

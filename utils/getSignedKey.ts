@@ -1,4 +1,4 @@
-import { client } from "../app/toth/[[...routes]]/fetch";
+import { client } from "../app/toth/[[...routes]]/client";
 import { ViemLocalEip712Signer } from "@farcaster/hub-nodejs";
 import { bytesToHex, hexToBytes } from "viem";
 import { mnemonicToAccount } from "viem/accounts";

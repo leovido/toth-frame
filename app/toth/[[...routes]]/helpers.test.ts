@@ -1,7 +1,7 @@
 import { fetchOrCreateAndVerifySigner } from "./helpers";
-import { votingSystem } from "./client";
+import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
 import { createAndStoreSigner } from "./helpers";
-import { client } from "./fetch";
+import { client } from "./client";
 
 // Mock the modules
 jest.mock("./client");

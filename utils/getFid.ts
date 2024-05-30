@@ -1,4 +1,4 @@
-import { client } from "../app/toth/[[...routes]]/fetch";
+import { client } from "../app/toth/[[...routes]]/client";
 import { mnemonicToAccount } from "viem/accounts";
 
 export const getFid = async () => {

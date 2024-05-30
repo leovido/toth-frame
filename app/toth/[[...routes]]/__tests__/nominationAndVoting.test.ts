@@ -1,7 +1,7 @@
 // Assuming the file is nominationAndVotingSystem.ts
 import { NominationAndVotingSystem } from "../votingSystem/nominationAndVotingSystem";
 import { MongoDBService } from "../votingSystem/implementation/MongoDBService";
-import { client } from "../fetch";
+import { client } from "../client";
 
 jest.mock("../votingSystem/implementation/MongoDBService");
 jest.mock("../fetch", () => ({

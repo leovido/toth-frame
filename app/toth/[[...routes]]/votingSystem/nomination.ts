@@ -1,4 +1,4 @@
-import { votingSystem } from "../client";
+import { votingSystem } from "./nominationAndVotingSystem";
 import { Round } from "./types";
 
 export async function createNomination(

@@ -1,7 +1,7 @@
 import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { castNetworth, client } from "./fetch";
+import { castNetworth, client } from "./client";
 import { getSignedKey } from "@/utils/getSignedKey";
-import { votingSystem } from "./client";
+import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
 
 export const firstRun = async (castId: string, forceRefresh: boolean) => {
 	const willRun = forceRefresh && process.env.CONFIG === "DEV";
@@ -65,7 +65,10 @@ export async function fetchOrCreateAndVerifySigner(fid: number) {
 			? await client.lookupDeveloperManagedSigner(newSigner.public_key)
 			: undefined;
 
-		return signer;
+		return {
+			...signer,
+			signer_uuid: existingSigner?.signer_uuid ?? ""
+		};
 	} catch (error) {
 		console.error("Error fetching, creating, or verifying signer:", error);
 		// Handle error appropriately, e.g., return a default value or rethrow

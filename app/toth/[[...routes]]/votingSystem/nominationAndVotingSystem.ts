@@ -1,5 +1,5 @@
 import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { client } from "../fetch";
+import { client } from "../client";
 import { MongoDBService } from "./implementation/MongoDBService";
 import { IDatabaseService } from "./interface/voting";
 import { Nomination, Round } from "./types";
@@ -114,3 +114,5 @@ export class NominationAndVotingSystem {
 		}
 	}
 }
+
+export const votingSystem = new NominationAndVotingSystem();
