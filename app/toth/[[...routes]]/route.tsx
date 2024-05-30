@@ -111,7 +111,7 @@ app.frame("/", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "35px",
+						fontSize: "40px",
 						fontFamily: "Ubuntu",
 						color: "#30E000",
 						fontWeight: 400
@@ -121,7 +121,7 @@ app.frame("/", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "35px",
+						fontSize: "40px",
 						fontFamily: "Ubuntu",
 						color: "#30E000",
 						marginTop: -16
@@ -131,7 +131,7 @@ app.frame("/", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "35px",
+						fontSize: "40px",
 						fontFamily: "Ubuntu",
 						color: "#30E000"
 					}}
@@ -140,7 +140,7 @@ app.frame("/", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "35px",
+						fontSize: "40px",
 						fontFamily: "Ubuntu",
 						color: "#30E000",
 						marginTop: -16
@@ -150,13 +150,13 @@ app.frame("/", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "35px",
+						fontSize: "40px",
 						fontFamily: "Ubuntu",
 						color: "#30E000",
 						marginTop: -16
 					}}
 				>
-					Signer: onchain actions
+					Settings: permissions for TOTH
 				</h2>
 			</div>
 		),
@@ -824,10 +824,19 @@ app.frame("/signer", async (c) => {
 							paddingRight: 24
 						}}
 					>
+						<h1
+							style={{
+								fontSize: "2.3rem",
+								justifyContent: "center",
+								color: "#D6FFF6"
+							}}
+						>
+							Status: {signer?.status === "approved" ? "Connected" : "Pending"}
+						</h1>
 						<h1 style={{ fontSize: "2rem" }}>
 							TOTH will cast on your behalf to the winner of each round. You can
-							cancel at any in Warpcast settings {">"} Advanced {">"} Manage
-							connected apps {">"} Delete @tipothehat
+							cancel in Warpcast settings {">"} Advanced {">"} Manage connected
+							apps {">"} Delete @tipothehat
 						</h1>
 						<h1 style={{ fontSize: "2rem", color: "red" }}>
 							You can revoke permissions, but this will delete all casts made
