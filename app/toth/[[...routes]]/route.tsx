@@ -6,14 +6,17 @@ import { devtools } from "frog/dev";
 import { handle } from "frog/next";
 import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
-import { createAndStoreSigner, firstRun } from "./helpers";
+import {
+	createAndStoreSigner,
+	fetchOrCreateAndVerifySigner,
+	firstRun
+} from "./helpers";
 import { votingSystem } from "./client";
 import { client, verifyCastURL } from "./fetch";
 import { Nomination } from "./votingSystem/types";
 import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 import { createNomination } from "./votingSystem/nomination";
 import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import QRCode from "qrcode.react";
 
 interface State {
 	fcUser?: Signer;
@@ -28,7 +31,7 @@ interface State {
 }
 
 const app = new Frog<{ State: State }>({
-	verify: process.env.CONFIG === "PROD",
+	verify: false,
 	initialState: {
 		stateInfo: 0,
 		selectedCast: 0,
@@ -47,6 +50,10 @@ const app = new Frog<{ State: State }>({
 				name: "Space Mono",
 				source: "google",
 				weight: 700
+			},
+			{
+				name: "Ubuntu",
+				source: "google"
 			},
 			{
 				name: "Space Mono",
@@ -102,6 +109,55 @@ app.frame("/", async (c) => {
 				<h2 style={{ fontSize: "3rem", color: "#D6FFF6", fontWeight: 400 }}>
 					Pool tips, Fund awesomeness
 				</h2>
+				<h2
+					style={{
+						fontSize: "35px",
+						fontFamily: "Ubuntu",
+						color: "#30E000",
+						fontWeight: 400
+					}}
+				>
+					🔵 reward casts 🔵 group impact 🔵
+				</h2>
+				<h2
+					style={{
+						fontSize: "35px",
+						fontFamily: "Ubuntu",
+						color: "#30E000",
+						marginTop: -16
+					}}
+				>
+					tip builders+creators
+				</h2>
+				<h2
+					style={{
+						fontSize: "35px",
+						fontFamily: "Ubuntu",
+						color: "#30E000"
+					}}
+				>
+					Status: nominations & votes
+				</h2>
+				<h2
+					style={{
+						fontSize: "35px",
+						fontFamily: "Ubuntu",
+						color: "#30E000",
+						marginTop: -16
+					}}
+				>
+					Info: how to guide
+				</h2>
+				<h2
+					style={{
+						fontSize: "35px",
+						fontFamily: "Ubuntu",
+						color: "#30E000",
+						marginTop: -16
+					}}
+				>
+					Signer: onchain actions
+				</h2>
 			</div>
 		),
 		intents: [
@@ -112,7 +168,7 @@ app.frame("/", async (c) => {
 				Information
 			</Button>,
 			<Button key={"signer"} action="/signer" value="signer">
-				Signer
+				Settings
 			</Button>
 			// <Button key={"contribute"} action="/contribute" value="contribute">
 			// 	Contribute
@@ -723,10 +779,7 @@ app.frame("/signer", async (c) => {
 	const { frameData } = c;
 
 	const fid = frameData?.fid ?? 0;
-	const userHasSigner = await votingSystem.fetchSigner(fid);
-	const isSignerVerified = await client.lookupDeveloperManagedSigner(
-		userHasSigner.public_key
-	);
+	const signer = await fetchOrCreateAndVerifySigner(fid);
 
 	return c.res({
 		image: (
@@ -755,50 +808,32 @@ app.frame("/signer", async (c) => {
 						style={{
 							fontFamily: "Space Mono",
 							fontSize: "5rem",
-							color: "#38BDF8"
+							color: "#38BDF8",
+							justifyContent: "center"
 						}}
 					>
-						🎩 TOTH - Signers 🎩
+						🎩 TOTH - Settings 🎩
 					</h1>
-					{isSignerVerified && isSignerVerified.status !== "approved" && (
-						<div
-							style={{
-								display: "flex",
-								flexDirection: "column",
-								color: "#30E000",
-								justifyContent: "center",
-								paddingLeft: 24,
-								paddingRight: 24
-							}}
-						>
-							<h1 style={{ fontSize: "2rem" }}>
-								TOTH will cast on your behalf every day to the winner of each
-								round.
-							</h1>
-							<h1 style={{ fontSize: "2rem", color: "red" }}>
-								You can revoke permissions, but this will delete all casts made
-								via TOTH
-							</h1>
-						</div>
-					)}
-					{isSignerVerified && isSignerVerified.status === "approved" && (
-						<div
-							style={{
-								display: "flex",
-								flexDirection: "column",
-								color: "#30E000",
-								justifyContent: "center",
-								paddingLeft: 24,
-								paddingRight: 24
-							}}
-						>
-							<h1 style={{ fontSize: "2rem" }}>
-								TOTH will cast on your behalf to the winner of each round. You
-								can cancel at any time going to settings {">"} Advanced {">"}{" "}
-								Manage connected apps {">"} Delete @tipothehat
-							</h1>
-						</div>
-					)}
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							color: "#30E000",
+							justifyContent: "center",
+							paddingLeft: 24,
+							paddingRight: 24
+						}}
+					>
+						<h1 style={{ fontSize: "2rem" }}>
+							TOTH will cast on your behalf to the winner of each round. You can
+							cancel at any in Warpcast settings {">"} Advanced {">"} Manage
+							connected apps {">"} Delete @tipothehat
+						</h1>
+						<h1 style={{ fontSize: "2rem", color: "red" }}>
+							You can revoke permissions, but this will delete all casts made
+							via TOTH
+						</h1>
+					</div>
 				</div>
 			</div>
 		),
@@ -806,18 +841,8 @@ app.frame("/signer", async (c) => {
 			<Button key={"back"} action={"/"} value="back">
 				Back
 			</Button>,
-			<Button
-				key={"signerVerification"}
-				action={"/signerVerification"}
-				value="signerVerification"
-			>
-				Confirm
-			</Button>,
-			isSignerVerified && isSignerVerified.status === "pending_approval" && (
-				<Button.Link
-					key={"confirm"}
-					href={isSignerVerified.signer_approval_url || ""}
-				>
+			signer && signer.status === "pending_approval" && (
+				<Button.Link key={"confirm"} href={signer.signer_approval_url || ""}>
 					Sign in
 				</Button.Link>
 			)
@@ -861,14 +886,20 @@ app.frame("/signerVerification", async (c) => {
 							color: "#38BDF8"
 						}}
 					>
-						🎩 TOTH - Signers 🎩
+						🎩 TOTH - Sign in 🎩
 					</h1>
-					<div style={{ display: "flex" }}>
-						<QRCode
-							value={
-								"https://client.warpcast.com/deeplinks/signed-key-request?token=0x4c4a994995c52f3d79e0afbc8ea0696804df470e38f0bafa"
-							}
-						/>
+					<div
+						style={{
+							display: "flex",
+							color: "#30E000",
+							justifyContent: "center",
+							paddingLeft: 24,
+							paddingRight: 24
+						}}
+					>
+						<h1 style={{ fontSize: "2rem" }}>
+							Click on the Sign in button to connect with TOTH
+						</h1>
 					</div>
 				</div>
 			</div>
@@ -887,44 +918,44 @@ app.frame("/signerVerification", async (c) => {
 app.frame("/status", async (c) => {
 	const { frameData, deriveState, verified } = c;
 
-	if (!verified) {
-		console.log(`Frame verification failed for ${frameData?.fid}`);
-		return c.res({
-			image: (
-				<div
-					style={{
-						fontFamily: "Open Sans",
-						alignItems: "center",
-						background: "linear-gradient(to right, #231651, #17101F)",
-						backgroundSize: "100% 100%",
-						display: "flex",
-						flexDirection: "column",
-						flexWrap: "nowrap",
-						height: "100%",
-						justifyContent: "center",
-						textAlign: "center",
-						width: "100%"
-					}}
-				>
-					<p
-						style={{
-							fontFamily: "Open Sans",
-							fontWeight: 700,
-							fontSize: 45,
-							color: "#D6FFF6"
-						}}
-					>
-						Something went wrong
-					</p>
-				</div>
-			),
-			intents: [
-				<Button key={"restart"} action="/">
-					Restart
-				</Button>
-			]
-		});
-	}
+	// if (!verified) {
+	// 	console.log(`Frame verification failed for ${frameData?.fid}`);
+	// 	return c.res({
+	// 		image: (
+	// 			<div
+	// 				style={{
+	// 					fontFamily: "Open Sans",
+	// 					alignItems: "center",
+	// 					background: "linear-gradient(to right, #231651, #17101F)",
+	// 					backgroundSize: "100% 100%",
+	// 					display: "flex",
+	// 					flexDirection: "column",
+	// 					flexWrap: "nowrap",
+	// 					height: "100%",
+	// 					justifyContent: "center",
+	// 					textAlign: "center",
+	// 					width: "100%"
+	// 				}}
+	// 			>
+	// 				<p
+	// 					style={{
+	// 						fontFamily: "Open Sans",
+	// 						fontWeight: 700,
+	// 						fontSize: 45,
+	// 						color: "#D6FFF6"
+	// 					}}
+	// 				>
+	// 					Something went wrong
+	// 				</p>
+	// 			</div>
+	// 		),
+	// 		intents: [
+	// 			<Button key={"restart"} action="/">
+	// 				Restart
+	// 			</Button>
+	// 		]
+	// 	});
+	// }
 
 	const fid = frameData?.fid ?? 0;
 
