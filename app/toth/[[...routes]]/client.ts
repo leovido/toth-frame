@@ -28,13 +28,13 @@ export const postCast = async (
 	retries: number = 3
 ) => {
 	try {
-		// const url = `https://warpcast.com/leovido.eth/${replyTo}`;
-		// const cast = await client.lookUpCastByHashOrWarpcastUrl(url, "url");
+		const url = `https://warpcast.com/leovido.eth/${replyTo}`;
+		const cast = await client.lookUpCastByHashOrWarpcastUrl(url, "url");
 
 		const idem = randomUUID();
 		await retry(async () => {
 			await client.publishCast(signerUuid, text, {
-				replyTo: "0xab063bfde46782fda9db8357ef329bbe5725bbb1",
+				replyTo: cast.cast.hash,
 				idem
 			});
 		}, retries);
