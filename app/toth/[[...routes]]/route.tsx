@@ -31,7 +31,7 @@ interface State {
 }
 
 const app = new Frog<{ State: State }>({
-	verify: false,
+	verify: process.env.CONFIG === "PROD",
 	initialState: {
 		stateInfo: 0,
 		selectedCast: 0,
@@ -918,44 +918,44 @@ app.frame("/signerVerification", async (c) => {
 app.frame("/status", async (c) => {
 	const { frameData, deriveState, verified } = c;
 
-	// if (!verified) {
-	// 	console.log(`Frame verification failed for ${frameData?.fid}`);
-	// 	return c.res({
-	// 		image: (
-	// 			<div
-	// 				style={{
-	// 					fontFamily: "Open Sans",
-	// 					alignItems: "center",
-	// 					background: "linear-gradient(to right, #231651, #17101F)",
-	// 					backgroundSize: "100% 100%",
-	// 					display: "flex",
-	// 					flexDirection: "column",
-	// 					flexWrap: "nowrap",
-	// 					height: "100%",
-	// 					justifyContent: "center",
-	// 					textAlign: "center",
-	// 					width: "100%"
-	// 				}}
-	// 			>
-	// 				<p
-	// 					style={{
-	// 						fontFamily: "Open Sans",
-	// 						fontWeight: 700,
-	// 						fontSize: 45,
-	// 						color: "#D6FFF6"
-	// 					}}
-	// 				>
-	// 					Something went wrong
-	// 				</p>
-	// 			</div>
-	// 		),
-	// 		intents: [
-	// 			<Button key={"restart"} action="/">
-	// 				Restart
-	// 			</Button>
-	// 		]
-	// 	});
-	// }
+	if (!verified) {
+		console.log(`Frame verification failed for ${frameData?.fid}`);
+		return c.res({
+			image: (
+				<div
+					style={{
+						fontFamily: "Open Sans",
+						alignItems: "center",
+						background: "linear-gradient(to right, #231651, #17101F)",
+						backgroundSize: "100% 100%",
+						display: "flex",
+						flexDirection: "column",
+						flexWrap: "nowrap",
+						height: "100%",
+						justifyContent: "center",
+						textAlign: "center",
+						width: "100%"
+					}}
+				>
+					<p
+						style={{
+							fontFamily: "Open Sans",
+							fontWeight: 700,
+							fontSize: 45,
+							color: "#D6FFF6"
+						}}
+					>
+						Something went wrong
+					</p>
+				</div>
+			),
+			intents: [
+				<Button key={"restart"} action="/">
+					Restart
+				</Button>
+			]
+		});
+	}
 
 	const fid = frameData?.fid ?? 0;
 
