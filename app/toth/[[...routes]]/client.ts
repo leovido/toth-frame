@@ -27,13 +27,20 @@ export const postCast = async (
 	replyTo: string,
 	retries: number = 3
 ) => {
-	const idem = randomUUID();
-	await retry(async () => {
-		await client.publishCast(signerUuid, text, {
-			replyTo,
-			idem
-		});
-	}, retries);
+	try {
+		// const url = `https://warpcast.com/leovido.eth/${replyTo}`;
+		// const cast = await client.lookUpCastByHashOrWarpcastUrl(url, "url");
+
+		const idem = randomUUID();
+		await retry(async () => {
+			await client.publishCast(signerUuid, text, {
+				replyTo: "0xab063bfde46782fda9db8357ef329bbe5725bbb1",
+				idem
+			});
+		}, retries);
+	} catch (error) {
+		console.error("Error posting cast:", error);
+	}
 };
 
 export async function verifyCastURL(url: string): Promise<boolean> {
