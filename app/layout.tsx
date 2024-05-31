@@ -7,8 +7,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 const inter = Space_Mono({ subsets: ["latin"], weight: ["400", "700"] });
 
 export const metadata: Metadata = {
-	title: "Who did I tip frame",
-	description: "Who did I tip created by leovido.eth"
+	title: "TOTH",
+	description: "Pool tips, Fund awesomeness"
 };
 
 export default function RootLayout({
