@@ -781,13 +781,31 @@ app.frame("/signer", async (c) => {
 	const fid = frameData?.fid ?? 0;
 	const signer = await fetchOrCreateAndVerifySigner(fid);
 
-	await postCast(
-		signer.signer_uuid,
-		"Testing something. 1 DEGEN",
-		"0xab063bfd"
-	).catch((error) => {
-		console.error("Error posting cast", error);
-	});
+	signer &&
+		(await postCast(
+			signer.signer_uuid,
+			"Testing something. 1 DEGEN",
+			"0xab063bfd"
+		).catch((error) => {
+			console.error("Error posting cast", error);
+		}));
+
+	const statusMessage = () => {
+		if (signer) {
+			switch (signer.status) {
+				case "approved":
+					return "Connected";
+				case "pending_approval":
+					return "Pending";
+				case "revoked":
+					return "Revoked";
+				default:
+					break;
+			}
+		} else {
+			return "Disconnected";
+		}
+	};
 
 	return c.res({
 		image: (
@@ -839,7 +857,7 @@ app.frame("/signer", async (c) => {
 								color: "#D6FFF6"
 							}}
 						>
-							Status: {signer?.status === "approved" ? "Connected" : "Pending"}
+							Status: {statusMessage()}
 						</h1>
 						<h1 style={{ fontSize: "2rem" }}>
 							TOTH will cast on your behalf to the winner of each round. You can

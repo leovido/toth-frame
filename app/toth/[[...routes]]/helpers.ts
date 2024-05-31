@@ -65,10 +65,14 @@ export async function fetchOrCreateAndVerifySigner(fid: number) {
 			? await client.lookupDeveloperManagedSigner(newSigner.public_key)
 			: undefined;
 
-		return {
-			...signer,
-			signer_uuid: existingSigner?.signer_uuid ?? ""
-		};
+		if (signer === undefined) {
+			return undefined;
+		} else {
+			return {
+				...signer,
+				signer_uuid: existingSigner?.signer_uuid ?? ""
+			};
+		}
 	} catch (error) {
 		console.error("Error fetching, creating, or verifying signer:", error);
 		// Handle error appropriately, e.g., return a default value or rethrow
