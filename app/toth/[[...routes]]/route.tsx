@@ -880,11 +880,6 @@ app.frame("/signer", async (c) => {
 });
 
 app.frame("/signerVerification", async (c) => {
-	const { frameData } = c;
-
-	const fid = frameData?.fid ?? 0;
-	const fcUser = await createAndStoreSigner(fid);
-
 	return c.res({
 		image: (
 			<div
