@@ -170,12 +170,6 @@ app.frame("/", async (c) => {
 			<Button key={"signer"} action="/signer" value="signer">
 				Settings
 			</Button>
-			// <Button key={"contribute"} action="/contribute" value="contribute">
-			// 	Contribute
-			// </Button>,
-			// <Button key={"settings"} action="/settings" value="settings">
-			// 	Settings
-			// </Button>
 		]
 	});
 });
@@ -1145,9 +1139,11 @@ app.frame("/status", async (c) => {
 					Vote
 				</Button>
 			),
-			<Button key={"leaderboard"} action="/leaderboard" value="leaderboard">
-				Leaderboard
-			</Button>
+			false && (
+				<Button key={"leaderboard"} action="/leaderboard" value="leaderboard">
+					Leaderboard
+				</Button>
+			)
 		]
 	});
 });
