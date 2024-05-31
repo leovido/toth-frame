@@ -33,6 +33,12 @@ export class NominationAndVotingSystem {
 		}
 	}
 
+	public async fetchHistory(fid: number) {
+		const history = await this.db.fetchHistory(fid);
+
+		return history;
+	}
+
 	public async fetchSigner(fid: number) {
 		try {
 			const signer = await this.db.fetchSigner(fid);

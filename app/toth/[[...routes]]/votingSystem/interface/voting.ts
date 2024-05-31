@@ -14,4 +14,5 @@ export interface IDatabaseService {
 	fetchNominationById(id: string): Promise<Nomination[]>;
 	storeSigner(fid: number, data: Signer): Promise<unknown>;
 	fetchSigner(fid: number): Promise<Signer | undefined>;
+	fetchHistory(fid: number): Promise<Nomination[]>;
 }

@@ -1149,8 +1149,12 @@ app.frame("/status", async (c) => {
 });
 
 app.frame("/history", async (c) => {
+	const { frameData } = c;
+
+	const fid = frameData?.fid ?? 0;
+
 	const isNominationRound = votingSystem.nominationOpen;
-	const nominations = await votingSystem.nominations;
+	const nominations = await votingSystem.fetchHistory(fid);
 
 	return c.res({
 		image: (
@@ -1185,26 +1189,39 @@ app.frame("/history", async (c) => {
 						alignItems: "center"
 					}}
 				>
-					{nominations.map((item, index) => (
-						<div
-							key={`${item}-${index}`}
-							style={{
-								display: "flex",
-								flexDirection: "row",
-								color: "#30E000",
-								fontSize: "1.1rem"
-							}}
-						>
+					{nominations.length > 0 ? (
+						nominations.map((item, index) => (
+							<div
+								key={`${item}-${index}`}
+								style={{
+									display: "flex",
+									flexDirection: "row",
+									color: "#30E000",
+									fontSize: "1.1rem"
+								}}
+							>
+								<h1
+									style={{
+										color: "white",
+										fontFamily: "Open Sans"
+									}}
+								>
+									{index + 1}. {item.username} - {item.castId}
+								</h1>
+							</div>
+						))
+					) : (
+						<div style={{ display: "flex", flexDirection: "column" }}>
 							<h1
 								style={{
 									color: "white",
 									fontFamily: "Open Sans"
 								}}
 							>
-								{index + 1}. {item.username} - {item.castId}
+								You haven&apos;t nominated yet
 							</h1>
 						</div>
-					))}
+					)}
 				</div>
 			</div>
 		),

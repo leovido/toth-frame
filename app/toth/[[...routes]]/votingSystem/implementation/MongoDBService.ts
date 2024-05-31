@@ -8,6 +8,32 @@ export class MongoDBService implements IDatabaseService {
 
 	constructor() {}
 
+	async fetchHistory(fid: number): Promise<Nomination[]> {
+		const apiUrl = process.env.TOTH_API
+			? `${process.env.TOTH_API}/history?fid=${fid}`
+			: "";
+
+		try {
+			const fetchResponse = await fetch(apiUrl, {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			});
+
+			if (!fetchResponse.ok) {
+				throw new Error(`Failed to fetch results: ${fetchResponse.status}`);
+			}
+
+			const nominations: Nomination[] = await fetchResponse.json();
+
+			return nominations;
+		} catch (error) {
+			console.error(`Error fetching history for ${fid}:`, error);
+			throw error;
+		}
+	}
+
 	async fetchSigner(fid: number): Promise<Signer | undefined> {
 		const apiUrl = process.env.TOTH_API
 			? `${process.env.TOTH_API}/signers?fid=${fid}`
