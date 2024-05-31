@@ -34,7 +34,8 @@ const bodyTextStyle = {
 	fontSize: "1.7rem",
 	color: "#D6FFF6",
 	fontWeight: 400,
-	width: "70%"
+	width: "50%",
+	justifyContent: "center"
 };
 
 const app = new Frog<{ State: State }>({
@@ -188,11 +189,11 @@ app.frame("/infoVotes", async (c) => {
 
 	const state = deriveState((previousState) => {
 		if (buttonValue === "nextInfo") {
-			previousState.stateInfo++;
+			previousState.stateInfo = 2;
 		}
 
 		if (buttonValue === "previousInfo") {
-			previousState.stateInfo--;
+			previousState.stateInfo = 1;
 		}
 	});
 
@@ -256,7 +257,17 @@ app.frame("/infoVotes", async (c) => {
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo)
+		intents: [
+			<Button key={"back"} action={"/"} value="back">
+				Back to main
+			</Button>,
+			<Button key={"previousInfo"} action={"/infoNoms"} value="previousInfo">
+				⬅️
+			</Button>,
+			<Button key={"nextInfo"} action="/rewards" value="nextInfo">
+				➡️
+			</Button>
+		]
 	});
 });
 
@@ -265,11 +276,11 @@ app.frame("/lore", async (c) => {
 
 	const state = deriveState((previousState) => {
 		if (buttonValue === "nextInfo") {
-			previousState.stateInfo = 0;
+			previousState.stateInfo = -1;
 		}
 
 		if (buttonValue === "previousInfo") {
-			previousState.stateInfo--;
+			previousState.stateInfo = 3;
 		}
 	});
 
@@ -278,6 +289,7 @@ app.frame("/lore", async (c) => {
 			<div
 				style={{
 					fontFamily: "Open Sans",
+					alignItems: "center",
 					background: "#17101F",
 					backgroundSize: "100% 100%",
 					display: "flex",
@@ -285,6 +297,7 @@ app.frame("/lore", async (c) => {
 					flexWrap: "nowrap",
 					height: "100%",
 					textAlign: "center",
+					justifyContent: "space-between",
 					width: "100%",
 					paddingLeft: 20,
 					paddingRight: 20
@@ -305,70 +318,37 @@ app.frame("/lore", async (c) => {
 
 				<h2
 					style={{
-						...bodyTextStyle,
-						margin: "auto",
-						marginBottom: -20,
-						textAlign: "center"
+						...bodyTextStyle
 					}}
 				>
-					-1-
+					First initiated by 0xen
 				</h2>
 
 				<h2
 					style={{
-						...bodyTextStyle,
-						paddingLeft: 20,
-						paddingRight: 20
+						...bodyTextStyle
 					}}
 				>
-					TOTH is built on trust and was first initiated by 0xen as a means to
-					encourage and reward experimentation + building on Farcaster
+					Rewarding experimentation/building
 				</h2>
 
 				<h2
 					style={{
-						...bodyTextStyle,
-						margin: "auto",
-						marginBottom: -20,
-						textAlign: "center"
+						...bodyTextStyle
 					}}
 				>
-					-2-
+					V1: make TOTH easy using native FC actions
 				</h2>
 				<h2
 					style={{
-						...bodyTextStyle,
-						paddingLeft: 20,
-						paddingRight: 20
+						...bodyTextStyle
 					}}
 				>
-					This first version seeks to explore helpful ways to make it easy to do
-					so using native FC actions
-				</h2>
-
-				<h2
-					style={{
-						...bodyTextStyle,
-						margin: "auto",
-						marginBottom: -20,
-						textAlign: "center"
-					}}
-				>
-					-3-
+					V2: add features e.g. autosubscribe
 				</h2>
 				<h2
 					style={{
-						...bodyTextStyle,
-						paddingLeft: 20,
-						paddingRight: 20
-					}}
-				>
-					For feedback, suggestions, and more information please contact the
-					doxxed dev
-				</h2>
-				<h2
-					style={{
-						fontSize: "2rem",
+						fontSize: "1.2rem",
 						color: "#38BDF8",
 						fontWeight: 400,
 						paddingLeft: 20,
@@ -377,12 +357,12 @@ app.frame("/lore", async (c) => {
 						marginBottom: -20
 					}}
 				>
-					Team on FC: @leovido.eth | @papa | @tipothehat
+					Doxxed devs: @leovido.eth | @papa | @tipothehat
 				</h2>
 
 				<h2
 					style={{
-						fontSize: "2rem",
+						fontSize: "1.2rem",
 						color: "#30E000",
 						fontWeight: 400,
 						paddingLeft: 20,
@@ -394,7 +374,17 @@ app.frame("/lore", async (c) => {
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo)
+		intents: [
+			<Button key={"back"} action={"/"} value="back">
+				Back to main
+			</Button>,
+			<Button key={"previousInfo"} action={"/rewards"} value="previousInfo">
+				⬅️
+			</Button>,
+			<Button key={"nextInfo"} action="/information" value="nextInfo">
+				➡️
+			</Button>
+		]
 	});
 });
 
@@ -403,11 +393,11 @@ app.frame("/rewards", async (c) => {
 
 	const state = deriveState((previousState) => {
 		if (buttonValue === "nextInfo") {
-			previousState.stateInfo++;
+			previousState.stateInfo = 3;
 		}
 
 		if (buttonValue === "previousInfo") {
-			previousState.stateInfo--;
+			previousState.stateInfo = 2;
 		}
 	});
 
@@ -416,13 +406,15 @@ app.frame("/rewards", async (c) => {
 			<div
 				style={{
 					fontFamily: "Open Sans",
+					alignItems: "center",
 					background: "#17101F",
 					backgroundSize: "100% 100%",
 					display: "flex",
 					flexDirection: "column",
 					flexWrap: "nowrap",
 					height: "100%",
-					textAlign: "justify",
+					justifyContent: "space-between",
+					textAlign: "center",
 					width: "100%",
 					paddingLeft: 20,
 					paddingRight: 20
@@ -442,62 +434,60 @@ app.frame("/rewards", async (c) => {
 				</h1>
 				<h2
 					style={{
-						...bodyTextStyle,
-						paddingLeft: 20,
-						paddingRight: 20
+						...bodyTextStyle
 					}}
 				>
-					1. 90% of TOTH to cast creator/builder(s)
+					90% to cast creator/builder(s)
 				</h2>
 				<h2
 					style={{
 						...bodyTextStyle,
-						paddingLeft: 20,
-						paddingRight: 20
+						marginTop: -80
 					}}
 				>
-					2. 5% of TOTH to power badge holders & vetted council that voted at
-					least four times in a week (split between them)
+					5% to voters & vetted council
 				</h2>
 				<h2
 					style={{
 						...bodyTextStyle,
-						paddingLeft: 20,
-						paddingRight: 20
+						marginTop: -80
 					}}
 				>
-					3. 5% of TOTH to dev team for ongoing maintenance and improvements
+					5% to dev team
+				</h2>
+				<h2
+					style={{
+						...bodyTextStyle
+					}}
+				>
+					Invalid cast TOTH rollover: reward
 				</h2>
 				<h2
 					style={{
 						...bodyTextStyle,
-						paddingLeft: 20,
-						paddingRight: 20
+						width: "50%",
+						marginTop: -110
 					}}
 				>
-					4. If a TOTH is invalidated by the final council (e.g. a known bot)
-					that TOTH reward will be put in a public admin treasury to be
-					distributed as a bonus across the next 10 winners
+					distributed as a bonus across next 10 winners
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo)
+		intents: [
+			<Button key={"back"} action={"/"} value="back">
+				Back to main
+			</Button>,
+			<Button key={"previousInfo"} action={"/infoVotes"} value="previousInfo">
+				⬅️
+			</Button>,
+			<Button key={"nextInfo"} action="/lore" value="nextInfo">
+				➡️
+			</Button>
+		]
 	});
 });
 
 app.frame("/infoNoms", async (c) => {
-	const { deriveState, buttonValue } = c;
-
-	const state = deriveState((previousState) => {
-		if (buttonValue === "nextInfo") {
-			previousState.stateInfo++;
-		}
-
-		if (buttonValue === "previousInfo") {
-			previousState.stateInfo--;
-		}
-	});
-
 	return c.res({
 		image: (
 			<div
@@ -565,23 +555,21 @@ app.frame("/infoNoms", async (c) => {
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo)
+		intents: [
+			<Button key={"back"} action={"/"} value="back">
+				Back to main
+			</Button>,
+			<Button key={"previousInfo"} action={"/information"} value="previousInfo">
+				⬅️
+			</Button>,
+			<Button key={"nextInfo"} action="/infoVotes" value="nextInfo">
+				➡️
+			</Button>
+		]
 	});
 });
 
 app.frame("/information", async (c) => {
-	const { deriveState, buttonValue } = c;
-
-	const state = deriveState((previousState) => {
-		if (buttonValue === "nextInfo") {
-			previousState.stateInfo++;
-		}
-
-		if (buttonValue === "previousInfo") {
-			previousState.stateInfo = 4;
-		}
-	});
-
 	return c.res({
 		image: (
 			<div
@@ -634,7 +622,17 @@ app.frame("/information", async (c) => {
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo)
+		intents: [
+			<Button key={"back"} action={"/"} value="back">
+				Back to main
+			</Button>,
+			<Button key={"previousInfo"} action={"/lore"} value="previousInfo">
+				⬅️
+			</Button>,
+			<Button key={"nextInfo"} action="/infoNoms" value="nextInfo">
+				➡️
+			</Button>
+		]
 	});
 });
 
@@ -1819,7 +1817,7 @@ const generateIntentsInfo = (infoPage: number) => {
 					<Button key={"previousInfo"} action={"/lore"} value="previousInfo">
 						⬅️
 					</Button>,
-					<Button key={"nextInfo"} action="/infoNoms" value="nextInfo">
+					<Button key={"nextInfo"} action="/information" value="nextInfo">
 						➡️
 					</Button>
 				];
