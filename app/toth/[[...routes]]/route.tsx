@@ -6,11 +6,7 @@ import { devtools } from "frog/dev";
 import { handle } from "frog/next";
 import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
-import {
-	createAndStoreSigner,
-	fetchOrCreateAndVerifySigner,
-	firstRun
-} from "./helpers";
+import { fetchOrCreateAndVerifySigner, firstRun } from "./helpers";
 import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
 import { client, postCast, verifyCastURL } from "./client";
 import { Nomination } from "./votingSystem/types";
