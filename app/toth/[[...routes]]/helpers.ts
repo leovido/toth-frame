@@ -43,7 +43,7 @@ export const firstRun = async (castId: string, forceRefresh: boolean) => {
 	};
 };
 
-export const createAndStoreSigner: (
+export const createAndStoreSignerDB: (
 	fid: number
 ) => Promise<Signer | undefined> = async (fid: number) => {
 	try {

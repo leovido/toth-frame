@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import axios from "axios";
 import QRCode from "qrcode.react";
+import { createAndStoreSignerDB } from "./toth/[[...routes]]/helpers";
 
 interface FarcasterUser {
 	signer_uuid: string;
@@ -100,6 +101,7 @@ export default function Home() {
 					JSON.stringify(response.data)
 				);
 				setFarcasterUser(response.data);
+				await createAndStoreSignerDB(farcasterUser?.fid || 0);
 			}
 		} catch (error) {
 			console.error("API Call failed", error);
