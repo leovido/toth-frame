@@ -21,28 +21,6 @@ export default function Home() {
 	const [farcasterUser, setFarcasterUser] = useState<FarcasterUser | null>(
 		null
 	);
-	const [text, setText] = useState<string>("");
-	const [isCasting, setIsCasting] = useState<boolean>(false);
-
-	const handleCast = async () => {
-		setIsCasting(true);
-		const castText = text.length === 0 ? "gm" : text;
-		try {
-			const response = await axios.post("/api/cast", {
-				text: castText,
-				signer_uuid: farcasterUser?.signer_uuid
-			});
-			if (response.status === 200) {
-				setText(""); // Clear the text field
-				alert("Cast successful");
-			}
-		} catch (error) {
-			console.error("Could not send the cast", error);
-		} finally {
-			setIsCasting(false); // Re-enable the button
-		}
-	};
-
 	useEffect(() => {
 		const storedData = localStorage.getItem(LOCAL_STORAGE_KEYS.FARCASTER_USER);
 		if (storedData) {

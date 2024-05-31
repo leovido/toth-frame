@@ -937,7 +937,7 @@ app.frame("/signerVerification", async (c) => {
 			<Button key={"signer"} action={"/signer"} value="signer">
 				Back
 			</Button>,
-			<Button.Link key={"confirm"} href={fcUser?.signer_approval_url || ""}>
+			<Button.Link key={"confirm"} href={"https://toth-frame.vercel.app"}>
 				Sign in
 			</Button.Link>
 		]
