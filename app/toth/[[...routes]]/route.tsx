@@ -30,6 +30,13 @@ interface State {
 	nominationsToVote: Nomination[];
 }
 
+const bodyTextStyle = {
+	fontSize: "1.7rem",
+	color: "#D6FFF6",
+	fontWeight: 400,
+	width: "70%"
+};
+
 const app = new Frog<{ State: State }>({
 	verify: process.env.CONFIG === "PROD",
 	initialState: {
@@ -44,7 +51,9 @@ const app = new Frog<{ State: State }>({
 	assetsPath: "/",
 	basePath: "/toth",
 	ui: { vars },
+	imageAspectRatio: "1:1",
 	imageOptions: {
+		emoji: "blobmoji",
 		fonts: [
 			{
 				name: "Space Mono",
@@ -92,7 +101,7 @@ app.frame("/", async (c) => {
 					flexDirection: "column",
 					flexWrap: "nowrap",
 					height: "100%",
-					justifyContent: "center",
+					justifyContent: "space-around",
 					textAlign: "center",
 					width: "100%"
 				}}
@@ -100,18 +109,18 @@ app.frame("/", async (c) => {
 				<h1
 					style={{
 						fontFamily: "Space Mono",
-						fontSize: "5rem",
+						fontSize: "3rem",
 						color: "#38BDF8"
 					}}
 				>
 					🎩 Tip O&apos; The Hat 🎩
 				</h1>
-				<h2 style={{ fontSize: "3rem", color: "#D6FFF6", fontWeight: 400 }}>
+				<h2 style={{ fontSize: "2.2rem", color: "#D6FFF6", fontWeight: 400 }}>
 					Pool tips, Fund awesomeness
 				</h2>
 				<h2
 					style={{
-						fontSize: "40px",
+						fontSize: "30px",
 						fontFamily: "Ubuntu",
 						color: "#30E000",
 						fontWeight: 400
@@ -121,17 +130,17 @@ app.frame("/", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "40px",
+						fontSize: "30px",
 						fontFamily: "Ubuntu",
 						color: "#30E000",
-						marginTop: -16
+						marginTop: -40
 					}}
 				>
 					tip builders+creators
 				</h2>
 				<h2
 					style={{
-						fontSize: "40px",
+						fontSize: "30px",
 						fontFamily: "Ubuntu",
 						color: "#30E000"
 					}}
@@ -140,17 +149,17 @@ app.frame("/", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "40px",
+						fontSize: "30px",
 						fontFamily: "Ubuntu",
 						color: "#30E000",
-						marginTop: -16
+						marginTop: -40
 					}}
 				>
 					Info: how to guide
 				</h2>
 				<h2
 					style={{
-						fontSize: "40px",
+						fontSize: "30px",
 						fontFamily: "Ubuntu",
 						color: "#30E000",
 						marginTop: -16
@@ -178,10 +187,12 @@ app.frame("/infoVotes", async (c) => {
 	const { deriveState, buttonValue } = c;
 
 	const state = deriveState((previousState) => {
-		if (buttonValue === "more") {
-			previousState.stateInfo = 1;
-		} else if (buttonValue === "information") {
-			previousState.stateInfo = 0;
+		if (buttonValue === "nextInfo") {
+			previousState.stateInfo++;
+		}
+
+		if (buttonValue === "previousInfo") {
+			previousState.stateInfo--;
 		}
 	});
 
@@ -197,7 +208,7 @@ app.frame("/infoVotes", async (c) => {
 					flexDirection: "column",
 					flexWrap: "nowrap",
 					height: "100%",
-					justifyContent: "center",
+					justifyContent: "space-between",
 					textAlign: "center",
 					width: "100%",
 					paddingLeft: 20,
@@ -207,56 +218,45 @@ app.frame("/infoVotes", async (c) => {
 				<h1
 					style={{
 						fontFamily: "Space Mono",
-						fontSize: "5rem",
+						fontSize: "3rem",
 						color: "#38BDF8"
 					}}
 				>
 					🎩 TOTH - Voting 🎩
 				</h1>
-				<h2 style={{ fontSize: "1.8rem", color: "#D6FFF6", fontWeight: 400 }}>
-					1. Only Power Badge holders can vote (once per round) at this stage
+				<h2 style={{ ...bodyTextStyle, justifyContent: "center" }}>
+					• Power Badge holders: 1 vote daily
 				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400
+						...bodyTextStyle,
+						marginTop: -70,
+						justifyContent: "center"
 					}}
 				>
-					2. Voting opens 6 PM the day before & closes at 6 PM on the TOTH day
+					• Vote: 🟢 6PM day b4 🔴 6PM TOTH day
 				</h2>
 				<h2
-					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400
-					}}
+					style={{ ...bodyTextStyle, marginTop: -70, justifyContent: "center" }}
 				>
-					3. From 6pm to midnight of TOTH day a vetted council of OGs, previous
-					TOTH winners & the dev team review the top-voted cast for anomalies
+					• Vetting: 6PM to 12PM TOTH day
+				</h2>
+				<h2 style={{ ...bodyTextStyle, justifyContent: "center" }}>
+					• Council: OGs, winners, dev team
 				</h2>
 				<h2
-					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400
-					}}
+					style={{ ...bodyTextStyle, marginTop: -70, justifyContent: "center" }}
 				>
-					4. If more vote &quot;no&quot; than &quot;yes,&quot; the TOTH is
-					invalidated and rolls over
+					• Anomaly: Veto&apos;d, TOTH rolls over
 				</h2>
 				<h2
-					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400
-					}}
+					style={{ ...bodyTextStyle, marginTop: -70, justifyContent: "center" }}
 				>
-					5. By default, the entire TOTH goes to the cast creator
+					• Valid: entire tip to cast creator
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo, false)
+		intents: generateIntentsInfo(state.stateInfo)
 	});
 });
 
@@ -264,10 +264,12 @@ app.frame("/lore", async (c) => {
 	const { deriveState, buttonValue } = c;
 
 	const state = deriveState((previousState) => {
-		if (buttonValue === "more") {
-			previousState.stateInfo = 1;
-		} else if (buttonValue === "information") {
+		if (buttonValue === "nextInfo") {
 			previousState.stateInfo = 0;
+		}
+
+		if (buttonValue === "previousInfo") {
+			previousState.stateInfo--;
 		}
 	});
 
@@ -291,7 +293,7 @@ app.frame("/lore", async (c) => {
 				<h1
 					style={{
 						fontFamily: "Space Mono",
-						fontSize: "5rem",
+						fontSize: "3rem",
 						color: "#38BDF8",
 						paddingLeft: 20,
 						paddingRight: 20,
@@ -303,9 +305,7 @@ app.frame("/lore", async (c) => {
 
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						margin: "auto",
 						marginBottom: -20,
 						textAlign: "center"
@@ -316,9 +316,7 @@ app.frame("/lore", async (c) => {
 
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						paddingLeft: 20,
 						paddingRight: 20
 					}}
@@ -329,9 +327,7 @@ app.frame("/lore", async (c) => {
 
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						margin: "auto",
 						marginBottom: -20,
 						textAlign: "center"
@@ -341,9 +337,7 @@ app.frame("/lore", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						paddingLeft: 20,
 						paddingRight: 20
 					}}
@@ -354,9 +348,7 @@ app.frame("/lore", async (c) => {
 
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						margin: "auto",
 						marginBottom: -20,
 						textAlign: "center"
@@ -366,9 +358,7 @@ app.frame("/lore", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						paddingLeft: 20,
 						paddingRight: 20
 					}}
@@ -404,7 +394,7 @@ app.frame("/lore", async (c) => {
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo, false)
+		intents: generateIntentsInfo(state.stateInfo)
 	});
 });
 
@@ -412,10 +402,12 @@ app.frame("/rewards", async (c) => {
 	const { deriveState, buttonValue } = c;
 
 	const state = deriveState((previousState) => {
-		if (buttonValue === "more") {
-			previousState.stateInfo = 1;
-		} else if (buttonValue === "information") {
-			previousState.stateInfo = 0;
+		if (buttonValue === "nextInfo") {
+			previousState.stateInfo++;
+		}
+
+		if (buttonValue === "previousInfo") {
+			previousState.stateInfo--;
 		}
 	});
 
@@ -439,7 +431,7 @@ app.frame("/rewards", async (c) => {
 				<h1
 					style={{
 						fontFamily: "Space Mono",
-						fontSize: "5rem",
+						fontSize: "3rem",
 						color: "#38BDF8",
 						paddingLeft: 20,
 						paddingRight: 20,
@@ -450,9 +442,7 @@ app.frame("/rewards", async (c) => {
 				</h1>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						paddingLeft: 20,
 						paddingRight: 20
 					}}
@@ -461,9 +451,7 @@ app.frame("/rewards", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						paddingLeft: 20,
 						paddingRight: 20
 					}}
@@ -473,9 +461,7 @@ app.frame("/rewards", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						paddingLeft: 20,
 						paddingRight: 20
 					}}
@@ -484,9 +470,7 @@ app.frame("/rewards", async (c) => {
 				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						paddingLeft: 20,
 						paddingRight: 20
 					}}
@@ -497,7 +481,7 @@ app.frame("/rewards", async (c) => {
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo, false)
+		intents: generateIntentsInfo(state.stateInfo)
 	});
 });
 
@@ -505,10 +489,12 @@ app.frame("/infoNoms", async (c) => {
 	const { deriveState, buttonValue } = c;
 
 	const state = deriveState((previousState) => {
-		if (buttonValue === "more") {
-			previousState.stateInfo = 1;
-		} else if (buttonValue === "information") {
-			previousState.stateInfo = 0;
+		if (buttonValue === "nextInfo") {
+			previousState.stateInfo++;
+		}
+
+		if (buttonValue === "previousInfo") {
+			previousState.stateInfo--;
 		}
 	});
 
@@ -517,13 +503,15 @@ app.frame("/infoNoms", async (c) => {
 			<div
 				style={{
 					fontFamily: "Open Sans",
+					alignItems: "center",
 					background: "#17101F",
 					backgroundSize: "100% 100%",
 					display: "flex",
 					flexDirection: "column",
+					justifyContent: "space-between",
+					textAlign: "center",
 					flexWrap: "nowrap",
 					height: "100%",
-					textAlign: "justify",
 					width: "100%",
 					paddingLeft: 20,
 					paddingRight: 20
@@ -532,7 +520,7 @@ app.frame("/infoNoms", async (c) => {
 				<h1
 					style={{
 						fontFamily: "Space Mono",
-						fontSize: "5rem",
+						fontSize: "2.5rem",
 						color: "#38BDF8",
 						justifyContent: "center"
 					}}
@@ -541,48 +529,43 @@ app.frame("/infoNoms", async (c) => {
 				</h1>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
-						textAlign: "justify",
-						paddingLeft: 20,
-						paddingRight: 20
+						...bodyTextStyle
 					}}
 				>
-					1. Insert (copy/paste) a cast hyperlink to nominate that cast for the
-					current TOTH cycle/round reward
+					• Insert (copy/paste) a cast hyperlink
 				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
-						textAlign: "justify",
-						paddingLeft: 20,
-						paddingRight: 20
+						...bodyTextStyle
 					}}
 				>
-					2. Anyone can nominate one cast per day by clicking the
-					&quot;Nominate&quot; button, Power badge holders have tripled
-					nomination power. Total nominations are tallied on a “status”
-					leaderboard.
+					• Anyone can nominate one cast per day
 				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
-						textAlign: "justify",
-						paddingLeft: 20,
-						paddingRight: 20
+						...bodyTextStyle
 					}}
 				>
-					3. Nominations open midnight the day before the TOTH & close at 6 PM,
-					Only the top 3 nominated casts proceed to the voting stage
+					• Power badge holders: 3X nomination power
+				</h2>
+				<h2
+					style={{
+						...bodyTextStyle
+					}}
+				>
+					• Top 3 nominations on “status” leaderboard.
+				</h2>
+				<h2
+					style={{
+						...bodyTextStyle,
+						justifyContent: "center"
+					}}
+				>
+					Nominations 🟢 12am 🔴 6 PM
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo, false)
+		intents: generateIntentsInfo(state.stateInfo)
 	});
 });
 
@@ -590,10 +573,12 @@ app.frame("/information", async (c) => {
 	const { deriveState, buttonValue } = c;
 
 	const state = deriveState((previousState) => {
-		if (buttonValue === "more") {
-			previousState.stateInfo = 1;
-		} else if (buttonValue === "information") {
-			previousState.stateInfo = 0;
+		if (buttonValue === "nextInfo") {
+			previousState.stateInfo++;
+		}
+
+		if (buttonValue === "previousInfo") {
+			previousState.stateInfo = 4;
 		}
 	});
 
@@ -609,7 +594,7 @@ app.frame("/information", async (c) => {
 					flexDirection: "column",
 					flexWrap: "nowrap",
 					height: "100%",
-					justifyContent: "center",
+					justifyContent: "space-between",
 					textAlign: "center",
 					width: "100%",
 					paddingLeft: 20,
@@ -619,81 +604,37 @@ app.frame("/information", async (c) => {
 				<h1
 					style={{
 						fontFamily: "Space Mono",
-						fontSize: "5rem",
+						fontSize: "3rem",
 						color: "#38BDF8"
 					}}
 				>
 					🎩 TOTH - Info 🎩
 				</h1>
-				<h2 style={{ fontSize: "1.8rem", color: "#D6FFF6", fontWeight: 400 }}>
-					Farcaster community coming together to:
+				<h2 style={bodyTextStyle}>Daily grouped tipping on Farcaster</h2>
+
+				<h2 style={bodyTextStyle}>• Nominate the most deserving casts</h2>
+				<h2 style={{ ...bodyTextStyle, marginTop: -16 }}>
+					• Vote on the most impactful contributions
 				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400
-					}}
-				>
-					- Promote and reward exceptional content or contributions
-				</h2>
-				<h2
-					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
+						...bodyTextStyle,
 						marginTop: -16
 					}}
 				>
-					- Pool tips to create more significant collective impact
-				</h2>
-				<h2
-					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
-						marginTop: -16
-					}}
-				>
-					- Incentivize quality and meaningful work by builders and creators
+					• Combine individual tips into larger rewards
 				</h2>
 
-				<h2 style={{ fontSize: "1.8rem", color: "#D6FFF6", fontWeight: 400 }}>
-					This tool has been built to enable:
-				</h2>
 				<h2
 					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400
+						...bodyTextStyle
 					}}
 				>
-					- Nomination and voting of the most deserving casts daily
-				</h2>
-				<h2
-					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
-						marginTop: -16
-					}}
-				>
-					- Combine individual tips into larger, more impactful rewards
-				</h2>
-				<h2
-					style={{
-						fontSize: "1.8rem",
-						color: "#D6FFF6",
-						fontWeight: 400,
-						marginTop: -16,
-						paddingBottom: 8
-					}}
-				>
-					- Confer pooled rewards to selected cast creators or contributors
+					• Celebrate onchain builders & creators
 				</h2>
 			</div>
 		),
-		intents: generateIntentsInfo(state.stateInfo, true)
+		intents: generateIntentsInfo(state.stateInfo)
 	});
 });
 
@@ -1813,37 +1754,81 @@ const formattedNominations = (nominations: Nomination[]) => {
 	};
 };
 
-const generateIntentsInfo = (infoPage: number, goToIntro: boolean) => {
-	if (infoPage === 0) {
-		return [
-			<Button
-				key={"back"}
-				action={goToIntro ? "/" : "/information"}
-				value="back"
-			>
-				⬅️
-			</Button>,
-			<Button key={"infoNoms"} action="/infoNoms" value="infoNoms">
-				Nominations
-			</Button>,
-			<Button key={"infoVotes"} action="/infoVotes" value="infoVotes">
-				Votes
-			</Button>,
-			<Button key={"more"} action="/information" value="more">
-				➡️
-			</Button>
-		];
-	} else {
-		return [
-			<Button key={"information"} action="/information" value="information">
-				⬅️
-			</Button>,
-			<Button key={"rewards"} action="/rewards" value="rewards">
-				Rewards
-			</Button>,
-			<Button key={"lore"} action="/lore" value="lore">
-				Lore
-			</Button>
-		];
-	}
+const generateIntentsInfo = (infoPage: number) => {
+	const paginationButtons = () => {
+		switch (infoPage) {
+			case 0:
+				return [
+					<Button key={"previousInfo"} action={"/lore"} value="previousInfo">
+						⬅️
+					</Button>,
+					<Button key={"nextInfo"} action="/infoNoms" value="nextInfo">
+						➡️
+					</Button>
+				];
+			case 1:
+				return [
+					<Button
+						key={"previousInfo"}
+						action={"/information"}
+						value="previousInfo"
+					>
+						⬅️
+					</Button>,
+					<Button key={"nextInfo"} action="/infoVotes" value="nextInfo">
+						➡️
+					</Button>
+				];
+			case 2:
+				return [
+					<Button
+						key={"previousInfo"}
+						action={"/infoNoms"}
+						value="previousInfo"
+					>
+						⬅️
+					</Button>,
+					<Button key={"nextInfo"} action="/rewards" value="nextInfo">
+						➡️
+					</Button>
+				];
+			case 3:
+				return [
+					<Button
+						key={"previousInfo"}
+						action={"/infoVotes"}
+						value="previousInfo"
+					>
+						⬅️
+					</Button>,
+					<Button key={"nextInfo"} action="/lore" value="nextInfo">
+						➡️
+					</Button>
+				];
+			case 4:
+				return [
+					<Button key={"previousInfo"} action={"/rewards"} value="previousInfo">
+						⬅️
+					</Button>,
+					<Button key={"nextInfo"} action="/information" value="nextInfo">
+						➡️
+					</Button>
+				];
+			default:
+				return [
+					<Button key={"previousInfo"} action={"/lore"} value="previousInfo">
+						⬅️
+					</Button>,
+					<Button key={"nextInfo"} action="/infoNoms" value="nextInfo">
+						➡️
+					</Button>
+				];
+		}
+	};
+	return [
+		<Button key={"back"} action={"/"} value="back">
+			Back to main
+		</Button>,
+		...paginationButtons()
+	];
 };
