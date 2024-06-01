@@ -857,14 +857,14 @@ app.frame("/signer", async (c) => {
 			<Button key={"back"} action={"/"} value="back">
 				Back
 			</Button>,
-			signer && signer.status === "pending_approval" && (
-				<Button.Link
-					key={"confirm"}
-					href={`${process.env.NEXT_PUBLIC_URL ?? "http://localhost:3000"}`}
-				>
-					Sign in
-				</Button.Link>
-			)
+			// signer && signer.status === "pending_approval" && (
+			<Button.Link
+				key={"confirm"}
+				href={`${process.env.NEXT_PUBLIC_URL ?? "http://localhost:3000"}`}
+			>
+				Sign in
+			</Button.Link>
+			// )
 		]
 	});
 });

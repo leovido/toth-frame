@@ -35,6 +35,7 @@ const generate_signature = async function (public_key: string) {
 	const FID = await getFid();
 
 	const account = mnemonicToAccount(FARCASTER_DEVELOPER_MNEMONIC);
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const appAccountKey = new ViemLocalEip712Signer(account as any);
 
 	// Generates an expiration date for the signature (24 hours from now).
