@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import axios from "axios";
 import QRCode from "qrcode.react";
-import { createAndStoreSignerDB } from "./toth/[[...routes]]/helpers";
+import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { votingSystem } from "./toth/[[...routes]]/votingSystem/nominationAndVotingSystem";
 
 interface FarcasterUser {
 	signer_uuid: string;
@@ -13,6 +14,19 @@ interface FarcasterUser {
 	signer_approval_url?: string;
 	fid?: number;
 }
+
+const newCreateAndStoreSignerDB: (
+	fid: number,
+	signer: Signer
+) => Promise<void> = async (fid: number, signer: Signer) => {
+	try {
+		await votingSystem.storeSigner(fid, signer);
+
+		return;
+	} catch (error) {
+		console.error("newCreateAndStoreSignerDB Call failed", error);
+	}
+};
 
 export default function Home() {
 	const LOCAL_STORAGE_KEYS = {
@@ -95,13 +109,14 @@ export default function Home() {
 	const createAndStoreSigner = async () => {
 		try {
 			const response = await axios.post("/api/signer");
+			const signer = response.data;
 			if (response.status === 200) {
 				localStorage.setItem(
 					LOCAL_STORAGE_KEYS.FARCASTER_USER,
 					JSON.stringify(response.data)
 				);
 				setFarcasterUser(response.data);
-				await createAndStoreSignerDB(farcasterUser?.fid || 0);
+				await newCreateAndStoreSignerDB(farcasterUser?.fid || 0, signer);
 			}
 		} catch (error) {
 			console.error("API Call failed", error);

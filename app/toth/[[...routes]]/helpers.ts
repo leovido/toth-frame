@@ -59,10 +59,9 @@ export const createAndStoreSignerDB: (
 export async function fetchOrCreateAndVerifySigner(fid: number) {
 	try {
 		const existingSigner = await votingSystem.fetchSigner(fid);
-		const newSigner = existingSigner ?? (await createAndStoreSignerDB(fid));
 
-		const signer = newSigner
-			? await client.lookupDeveloperManagedSigner(newSigner.public_key)
+		const signer = existingSigner
+			? await client.lookupDeveloperManagedSigner(existingSigner.public_key)
 			: undefined;
 
 		if (signer === undefined) {
