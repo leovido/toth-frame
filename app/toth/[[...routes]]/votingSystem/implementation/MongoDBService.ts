@@ -70,6 +70,7 @@ export class MongoDBService implements IDatabaseService {
 			: "";
 
 		try {
+			console.warn(fid, "fid");
 			const fetchResponse = await fetch(apiUrl, {
 				method: "POST",
 				headers: {
@@ -84,7 +85,7 @@ export class MongoDBService implements IDatabaseService {
 			});
 
 			if (!fetchResponse.ok) {
-				throw new Error(`Failed to fetch results: ${fetchResponse.status}`);
+				throw new Error(`Failed to store signer: ${fetchResponse.status}`);
 			}
 
 			return;
