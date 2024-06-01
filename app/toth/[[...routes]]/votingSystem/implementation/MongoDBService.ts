@@ -77,6 +77,7 @@ export class MongoDBService implements IDatabaseService {
 				},
 				body: JSON.stringify({
 					id: randomUUID(),
+					createdAt: new Date().toISOString(),
 					fid,
 					...data
 				})

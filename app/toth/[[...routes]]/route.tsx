@@ -771,15 +771,6 @@ app.frame("/signer", async (c) => {
 	const fid = frameData?.fid ?? 0;
 	const signer = await fetchOrCreateAndVerifySigner(fid);
 
-	signer &&
-		(await postCast(
-			signer.signer_uuid,
-			"Testing something. 1 DEGEN",
-			"0xab063bfd"
-		).catch((error) => {
-			console.error("Error posting cast", error);
-		}));
-
 	const statusMessage = () => {
 		if (signer) {
 			switch (signer.status) {
@@ -867,7 +858,10 @@ app.frame("/signer", async (c) => {
 				Back
 			</Button>,
 			signer && signer.status === "pending_approval" && (
-				<Button.Link key={"confirm"} href={signer.signer_approval_url || ""}>
+				<Button.Link
+					key={"confirm"}
+					href={`${process.env.NEXT_PUBLIC_URL ?? "http://localhost:3000"}`}
+				>
 					Sign in
 				</Button.Link>
 			)
