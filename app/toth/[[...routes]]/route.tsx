@@ -8,7 +8,7 @@ import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
 import { fetchOrCreateAndVerifySigner, firstRun } from "./helpers";
 import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
-import { client, postCast, verifyCastURL } from "./client";
+import { client, verifyCastURL } from "./client";
 import { Nomination } from "./votingSystem/types";
 import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 import { createNomination } from "./votingSystem/nomination";
