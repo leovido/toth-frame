@@ -30,6 +30,20 @@ export default function Home() {
 	}, []);
 
 	useEffect(() => {
+		const updateSigner = async () => {
+			try {
+				if (farcasterUser?.status === "approved") {
+					const response = await fetch("/api/votingSystem");
+					await response.json();
+				}
+			} catch (error) {
+				console.error(error);
+			}
+		};
+		updateSigner();
+	}, [farcasterUser]);
+
+	useEffect(() => {
 		if (farcasterUser && farcasterUser.status === "pending_approval") {
 			let intervalId: NodeJS.Timeout;
 

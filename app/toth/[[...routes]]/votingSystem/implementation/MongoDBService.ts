@@ -34,6 +34,37 @@ export class MongoDBService implements IDatabaseService {
 		}
 	}
 
+	async updateSigner(fid: number): Promise<void> {
+		const apiUrl = process.env.TOTH_API
+			? `${process.env.TOTH_API}/updateSigner`
+			: "";
+
+		try {
+			const fetchResponse = await fetch(apiUrl, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({ fid })
+			});
+
+			if (!fetchResponse.ok) {
+				throw new Error(`Failed to fetch results: ${fetchResponse.status}`);
+			}
+
+			if (fetchResponse.status === 200) {
+				await fetchResponse.json();
+
+				return;
+			} else {
+				return undefined;
+			}
+		} catch (error) {
+			console.error("Error fetching signer:", error);
+			throw error;
+		}
+	}
+
 	async fetchSigner(fid: number): Promise<Signer | undefined> {
 		const apiUrl = process.env.TOTH_API
 			? `${process.env.TOTH_API}/signers?fid=${fid}`

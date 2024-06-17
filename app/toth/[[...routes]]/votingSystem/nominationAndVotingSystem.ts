@@ -53,6 +53,10 @@ export class NominationAndVotingSystem {
 		await this.db.storeSigner(fid, data);
 	}
 
+	public async updateSigner(fid: number) {
+		await this.db.updateSigner(fid);
+	}
+
 	public async getCurrentRounds() {
 		const currentRound = await this.db.getCurrentRounds();
 
