@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-key */
 /** @jsxImportSource frog/jsx */
 
 import React from "react";
@@ -157,13 +158,13 @@ app.frame("/", async (c) => {
 			</div>
 		),
 		intents: [
-			<Button key={"status"} action="/status" value="status">
+			<Button action="/status" value="status">
 				Status
 			</Button>,
-			<Button key={"information"} action="/information" value="information">
+			<Button action="/information" value="information">
 				Information
 			</Button>,
-			<Button key={"signer"} action="/signer" value="signer">
+			<Button action="/signer" value="signer">
 				Settings
 			</Button>
 		]
@@ -749,15 +750,11 @@ app.frame("/leaderboard", async (c) => {
 			</div>
 		),
 		intents: [
-			<Button key={"/status"} action="/status" value="status">
+			<Button action="/status" value="status">
 				Back
 			</Button>,
 			false && (
-				<Button
-					key={"autosubscribe"}
-					action="/autosubscribe"
-					value="autosubscribe"
-				>
+				<Button action="/autosubscribe" value="autosubscribe">
 					Autosubscribe
 				</Button>
 			)
@@ -854,12 +851,11 @@ app.frame("/signer", async (c) => {
 			</div>
 		),
 		intents: [
-			<Button key={"back"} action={"/"} value="back">
+			<Button action={"/"} value="back">
 				Back
 			</Button>,
 			// signer && signer.status === "pending_approval" && (
 			<Button.Link
-				key={"confirm"}
 				href={`${process.env.NEXT_PUBLIC_URL ?? "http://localhost:3000"}`}
 			>
 				Sign in
@@ -919,12 +915,10 @@ app.frame("/signerVerification", async (c) => {
 			</div>
 		),
 		intents: [
-			<Button key={"signer"} action={"/signer"} value="signer">
+			<Button action={"/signer"} value="signer">
 				Back
 			</Button>,
-			<Button.Link key={"confirm"} href={"https://toth-frame.vercel.app"}>
-				Sign in
-			</Button.Link>
+			<Button.Link href={"https://toth-frame.vercel.app"}>Sign in</Button.Link>
 		]
 	});
 });
@@ -963,11 +957,7 @@ app.frame("/status", async (c) => {
 					</p>
 				</div>
 			),
-			intents: [
-				<Button key={"restart"} action="/">
-					Restart
-				</Button>
-			]
+			intents: [<Button action="/">Restart</Button>]
 		});
 	}
 
@@ -1111,21 +1101,21 @@ app.frame("/status", async (c) => {
 			</div>
 		),
 		intents: [
-			<Button key={"intro"} action="/" value="intro">
+			<Button action="/" value="intro">
 				Intro
 			</Button>,
 			isNominationRound && !state.didNominate && (
-				<Button key={"nominate"} action="/nominate" value="nominate">
+				<Button action="/nominate" value="nominate">
 					Nominate
 				</Button>
 			),
 			isPowerBadgeUser && (
-				<Button key={"vote"} action="/vote" value="vote">
+				<Button action="/vote" value="vote">
 					Vote
 				</Button>
 			),
 			false && (
-				<Button key={"leaderboard"} action="/leaderboard" value="leaderboard">
+				<Button action="/leaderboard" value="leaderboard">
 					Leaderboard
 				</Button>
 			)
@@ -1212,7 +1202,7 @@ app.frame("/history", async (c) => {
 		),
 		intents: [
 			isNominationRound && (
-				<Button key={"back"} action="/status" value="back">
+				<Button action="/status" value="back">
 					Back
 				</Button>
 			)
@@ -1426,36 +1416,36 @@ app.frame("/vote", async (c) => {
 		intents: !hasUserVoted
 			? [
 					nominationsWithVotes.length > 0 && (
-						<Button key={"finalVote"} action="/vote" value="finalVote">
+						<Button action="/vote" value="finalVote">
 							Vote
 						</Button>
 					),
 					nominationsWithVotes.length === 0 && (
-						<Button key={"back"} action="/status" value="back">
+						<Button action="/status" value="back">
 							Back
 						</Button>
 					),
 					nominations.length > 0 && (
-						<Button.Redirect key={"redirect-to-cast"} location={selectedCast}>
+						<Button.Redirect location={selectedCast}>
 							View selected cast
 						</Button.Redirect>
 					),
 					state.selectedCast > 0 && (
-						<Button key={"prevCast"} action="/vote" value="prevCast">
+						<Button action="/vote" value="prevCast">
 							↑
 						</Button>
 					),
 					state.selectedCast < nominations.length - 1 && (
-						<Button key={"nextCast"} action="/vote" value="nextCast">
+						<Button action="/vote" value="nextCast">
 							↓
 						</Button>
 					)
 				]
 			: [
-					<Button key={"refresh"} action="/vote" value="vote">
+					<Button action="/vote" value="vote">
 						Refresh
 					</Button>,
-					<Button key={"status"} action="/status" value="status">
+					<Button action="/status" value="status">
 						Back
 					</Button>
 				]
@@ -1612,11 +1602,7 @@ app.frame("/check", async (c) => {
 					</p>
 				</div>
 			),
-			intents: [
-				<Button key={"restart"} action="/">
-					Restart
-				</Button>
-			]
+			intents: [<Button action="/">Restart</Button>]
 		});
 	}
 
@@ -1737,25 +1723,25 @@ const generateNominateIntents = (
 ) => {
 	if (didNominate) {
 		return [
-			<Button key={"back"} action="/status" value="status">
+			<Button action="/status" value="status">
 				Back
 			</Button>,
 			isPowerBadgeUser && (
-				<Button key={"vote"} action="/vote" value="vote">
+				<Button action="/vote" value="vote">
 					Vote
 				</Button>
 			),
-			<Button key={"history"} action="/history" value="history">
+			<Button action="/history" value="history">
 				History
 			</Button>
 		];
 	} else {
 		return [
-			<TextInput key={"text-input"} placeholder="Warpcast URL of the cast" />,
-			<Button key={"nominate"} action="/nominate" value="nominateConfirm">
+			<TextInput placeholder="Warpcast URL of the cast" />,
+			<Button action="/nominate" value="nominateConfirm">
 				Submit
 			</Button>,
-			<Button key={"back"} action="/status" value="back">
+			<Button action="/status" value="back">
 				Back
 			</Button>
 		];
@@ -1765,19 +1751,19 @@ const generateNominateIntents = (
 const generateIntents = (fid: number, castIdFid: number) => {
 	if (fid === castIdFid) {
 		return [
-			<Button key={"check"} action="/check" value="check">
+			<Button action="/check" value="check">
 				Refresh
 			</Button>,
-			<Button key={"split"} action="/split" value="split">
+			<Button action="/split" value="split">
 				Split
 			</Button>
 		];
 	} else {
 		return [
-			<Button key={"check"} action="/check" value="check">
+			<Button action="/check" value="check">
 				Refresh
 			</Button>,
-			<Button key={"start"} action="/" value="start">
+			<Button action="/" value="start">
 				Start
 			</Button>
 		];
@@ -1809,32 +1795,28 @@ const formattedNominations = (nominations: Nomination[]) => {
 const generateIntentsInfo = (infoPage: number, goToIntro: boolean) => {
 	if (infoPage === 0) {
 		return [
-			<Button
-				key={"back"}
-				action={goToIntro ? "/" : "/information"}
-				value="back"
-			>
+			<Button action={goToIntro ? "/" : "/information"} value="back">
 				⬅️
 			</Button>,
-			<Button key={"infoNoms"} action="/infoNoms" value="infoNoms">
+			<Button action="/infoNoms" value="infoNoms">
 				Nominations
 			</Button>,
-			<Button key={"infoVotes"} action="/infoVotes" value="infoVotes">
+			<Button action="/infoVotes" value="infoVotes">
 				Votes
 			</Button>,
-			<Button key={"more"} action="/information" value="more">
+			<Button action="/information" value="more">
 				➡️
 			</Button>
 		];
 	} else {
 		return [
-			<Button key={"information"} action="/information" value="information">
+			<Button action="/information" value="information">
 				⬅️
 			</Button>,
-			<Button key={"rewards"} action="/rewards" value="rewards">
+			<Button action="/rewards" value="rewards">
 				Rewards
 			</Button>,
-			<Button key={"lore"} action="/lore" value="lore">
+			<Button action="/lore" value="lore">
 				Lore
 			</Button>
 		];

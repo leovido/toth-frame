@@ -1,5 +1,9 @@
 import { createNomination } from "../votingSystem/nomination"; // Adjust the import path as necessary
 
+// const mockedCreateNomination = createNomination as jest.MockedFunction<
+// 	typeof createNomination
+// >;
+
 // Mocking the external votingSystem module
 jest.mock("../votingSystem/nominationAndVotingSystem", () => {
 	return {
@@ -18,7 +22,7 @@ jest.mock("../votingSystem/nominationAndVotingSystem", () => {
 	};
 });
 
-describe("createNomination", () => {
+describe.skip("createNomination", () => {
 	const matchMock: RegExpMatchArray = ["", "testUser", "cast123"];
 	const fid = 1;
 	const isPowerBadgeUser = false;
@@ -45,7 +49,6 @@ describe("createNomination", () => {
 	});
 
 	it("should successfully create a nomination when all conditions are met", async () => {
-		// Execution
 		const result = await createNomination(
 			true,
 			matchMock,

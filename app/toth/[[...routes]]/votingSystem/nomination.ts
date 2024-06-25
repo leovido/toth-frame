@@ -1,13 +1,13 @@
 import { votingSystem } from "./nominationAndVotingSystem";
 import { Round } from "./types";
 
-export async function createNomination(
+export const createNomination = async (
 	isValidCast: boolean,
 	match: RegExpMatchArray | null | undefined,
 	fid: number,
 	isPowerBadgeUser: boolean,
 	currentRound: Round | undefined
-) {
+) => {
 	if (isValidCast && match) {
 		const now = new Date();
 		const hours = now.getUTCHours();
@@ -42,4 +42,4 @@ export async function createNomination(
 	} else {
 		return [];
 	}
-}
+};
