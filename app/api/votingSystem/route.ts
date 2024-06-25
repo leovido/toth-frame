@@ -1,7 +1,7 @@
 import { votingSystem } from "@/app/toth/[[...routes]]/votingSystem/nominationAndVotingSystem";
 import { NextRequest, NextResponse } from "next/server";
 
-export default async (req: NextRequest) => {
+export async function GET(req: NextRequest) {
 	try {
 		const { fid } = await req.json();
 
@@ -12,4 +12,4 @@ export default async (req: NextRequest) => {
 	} catch (error) {
 		return NextResponse.json({ error: "An error occurred" }, { status: 500 });
 	}
-};
+}

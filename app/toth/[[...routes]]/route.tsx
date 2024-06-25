@@ -1522,7 +1522,15 @@ app.frame("/nominate", async (c) => {
 				)}
 
 				{userNomination.length === 0 && (
-					<div style={{ display: "flex", flexDirection: "column" }}>
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							textAlign: "left",
+							paddingLeft: 30,
+							paddingRight: 20
+						}}
+					>
 						<h2 style={{ fontSize: "2rem", color: "#D6FFF6", fontWeight: 400 }}>
 							1. Welcome! ⚡️ users get 3x points on nomination and normal users
 							1x
