@@ -61,11 +61,15 @@ export async function fetchOrCreateAndVerifySigner(fid: number) {
 	try {
 		const existingSigner = await votingSystem.fetchSigner(fid);
 
-		const signer = existingSigner
-			? await client.lookupDeveloperManagedSigner(existingSigner.public_key)
-			: undefined;
-
-		if (signer === undefined) {
+		if (existingSigner) {
+			const signer = await client.lookupDeveloperManagedSigner(
+				existingSigner.public_key
+			);
+			return {
+				...signer,
+				signer_uuid: existingSigner?.signer_uuid ?? ""
+			};
+		} else {
 			const response = await axios.post("http://localhost:3000/api/signer");
 			const signer = response.data;
 			if (response.status === 200) {
@@ -75,10 +79,7 @@ export async function fetchOrCreateAndVerifySigner(fid: number) {
 				});
 				return signer;
 			} else {
-				return {
-					...signer,
-					signer_uuid: existingSigner?.signer_uuid ?? ""
-				};
+				return undefined;
 			}
 		}
 	} catch (error) {

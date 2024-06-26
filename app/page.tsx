@@ -100,11 +100,11 @@ export default function Home() {
 
 	const handleSignIn = async () => {
 		setLoading(true);
-		await createAndStoreSigner();
+		await fetchExistingSigner();
 		setLoading(false);
 	};
 
-	const createAndStoreSigner = async () => {
+	const fetchExistingSigner = async () => {
 		try {
 			const response = await axios.get("/api/currentSigner");
 			console.warn(response, "here");
