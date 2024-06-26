@@ -2,6 +2,7 @@ import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { castNetworth, client } from "./client";
 import { getSignedKey } from "@/utils/getSignedKey";
 import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
+import axios from "axios";
 
 export const firstRun = async (castId: string, forceRefresh: boolean) => {
 	const willRun = forceRefresh && process.env.CONFIG === "DEV";
@@ -65,12 +66,20 @@ export async function fetchOrCreateAndVerifySigner(fid: number) {
 			: undefined;
 
 		if (signer === undefined) {
-			return undefined;
-		} else {
-			return {
-				...signer,
-				signer_uuid: existingSigner?.signer_uuid ?? ""
-			};
+			const response = await axios.post("http://localhost:3000/api/signer");
+			const signer = response.data;
+			if (response.status === 200) {
+				await axios.post("http://localhost:3000/api/storeSigner", {
+					fid: fid,
+					signer
+				});
+				return signer;
+			} else {
+				return {
+					...signer,
+					signer_uuid: existingSigner?.signer_uuid ?? ""
+				};
+			}
 		}
 	} catch (error) {
 		console.error("Error fetching, creating, or verifying signer:", error);

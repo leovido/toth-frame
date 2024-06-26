@@ -4,7 +4,7 @@ import { MongoDBService } from "../votingSystem/implementation/MongoDBService";
 import { client } from "../client";
 
 jest.mock("../votingSystem/implementation/MongoDBService");
-jest.mock("../fetch", () => ({
+jest.mock("../client", () => ({
 	client: {
 		lookUpCastByHashOrWarpcastUrl: jest.fn().mockResolvedValue(true)
 	}

@@ -1,16 +1,15 @@
 import { fetchOrCreateAndVerifySigner } from "./helpers";
 import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
-import { createAndStoreSigner } from "./helpers";
+import { createAndStoreSignerDB } from "./helpers";
 import { client } from "./client";
 
 // Mock the modules
 jest.mock("./client");
 jest.mock("./helpers");
-jest.mock("./fetch");
 
 describe("fetchOrCreateAndVerifySigner", () => {
 	const mockFetchSigner = votingSystem.fetchSigner as jest.Mock;
-	const mockCreateAndStoreSigner = createAndStoreSigner as jest.Mock;
+	const mockCreateAndStoreSigner = createAndStoreSignerDB as jest.Mock;
 	const mockLookupDeveloperManagedSigner =
 		client.lookupDeveloperManagedSigner as jest.Mock;
 
@@ -61,7 +60,7 @@ describe("fetchOrCreateAndVerifySigner", () => {
 		});
 	});
 
-	it("should handle errors and rethrow", async () => {
+	it.only("should handle errors and rethrow", async () => {
 		const fid = 203666;
 		const error = new Error("Some error");
 

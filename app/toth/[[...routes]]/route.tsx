@@ -28,7 +28,7 @@ interface State {
 }
 
 const app = new Frog<{ State: State }>({
-	verify: process.env.CONFIG === "PROD",
+	verify: false,
 	initialState: {
 		stateInfo: 0,
 		selectedCast: 0,
@@ -854,13 +854,11 @@ app.frame("/signer", async (c) => {
 			<Button action={"/"} value="back">
 				Back
 			</Button>,
-			// signer && signer.status === "pending_approval" && (
 			<Button.Link
 				href={`${process.env.NEXT_PUBLIC_URL ?? "http://localhost:3000"}`}
 			>
 				Sign in
 			</Button.Link>
-			// )
 		]
 	});
 });
@@ -964,7 +962,7 @@ app.frame("/status", async (c) => {
 	const fid = frameData?.fid ?? 0;
 
 	const response = await client.fetchBulkUsers([fid]);
-	const isPowerBadgeUser = response.users[0].power_badge || fid === 203666;
+	const isPowerBadgeUser = response.users[0].power_badge;
 
 	const round = await votingSystem.getCurrentRounds();
 	const votingRound = round.find((r) => {

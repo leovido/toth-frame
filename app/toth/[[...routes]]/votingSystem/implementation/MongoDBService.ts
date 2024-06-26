@@ -101,7 +101,6 @@ export class MongoDBService implements IDatabaseService {
 			: "";
 
 		try {
-			console.warn(fid, "fid");
 			const fetchResponse = await fetch(apiUrl, {
 				method: "POST",
 				headers: {
@@ -137,6 +136,10 @@ export class MongoDBService implements IDatabaseService {
 			}
 		);
 
+		console.warn(fetchResponse, "here");
+		if (!fetchResponse.ok) {
+			throw new Error(`Failed to fetch results: ${fetchResponse.status}`);
+		}
 		const json: Nomination[] = await fetchResponse.json();
 
 		return json;

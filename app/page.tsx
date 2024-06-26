@@ -106,19 +106,14 @@ export default function Home() {
 
 	const createAndStoreSigner = async () => {
 		try {
-			const response = await axios.post("/api/signer");
-			const signer = response.data;
+			const response = await axios.get("/api/currentSigner");
+			console.warn(response, "here");
 			if (response.status === 200) {
 				localStorage.setItem(
 					LOCAL_STORAGE_KEYS.FARCASTER_USER,
 					JSON.stringify(response.data)
 				);
 				setFarcasterUser(response.data);
-
-				await axios.post("/api/storeSigner", {
-					fid: farcasterUser?.fid ?? 0,
-					signer
-				});
 			}
 		} catch (error) {
 			console.error("API Call failed", error);

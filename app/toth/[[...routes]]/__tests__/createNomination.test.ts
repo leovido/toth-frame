@@ -1,8 +1,6 @@
 import { createNomination } from "../votingSystem/nomination"; // Adjust the import path as necessary
 
-// const mockedCreateNomination = createNomination as jest.MockedFunction<
-// 	typeof createNomination
-// >;
+// const mockedCreateNomination = createNomination as jest.Mock;
 
 // Mocking the external votingSystem module
 jest.mock("../votingSystem/nominationAndVotingSystem", () => {
