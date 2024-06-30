@@ -71,10 +71,12 @@ export async function fetchSigner(fid: number) {
 
 export async function createAndVerifySigner() {
 	try {
-		const response = await axios.post(`${process.env.PUBLIC_URL}/api/signer`);
+		const response = await axios.post(
+			`${process.env.NEXT_PUBLIC_URL}/api/signer`
+		);
 		const signer = response.data;
 		if (response.status === 200) {
-			await axios.post(`${process.env.PUBLIC_URL}/api/storeSigner`, {
+			await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/storeSigner`, {
 				signer
 			});
 			return signer;
