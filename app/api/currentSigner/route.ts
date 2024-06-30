@@ -1,11 +1,9 @@
-import { fetchOrCreateAndVerifySigner } from "@/app/toth/[[...routes]]/helpers";
-import { NextRequest, NextResponse } from "next/server";
+import { createAndVerifySigner } from "@/app/toth/[[...routes]]/helpers";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
 	try {
-		const _fid = await req.nextUrl.searchParams.get("fid");
-		const fid = Number(_fid);
-		const signer = await fetchOrCreateAndVerifySigner(fid);
+		const signer = await createAndVerifySigner();
 		return NextResponse.json(signer, {
 			status: 200
 		});

@@ -8,6 +8,32 @@ export class MongoDBService implements IDatabaseService {
 
 	constructor() {}
 
+	async fetchSignerByPKey(publicKey: string) {
+		const apiUrl = process.env.TOTH_API
+			? `${process.env.TOTH_API}/signers?publicKey=${publicKey}`
+			: "";
+
+		try {
+			const fetchResponse = await fetch(apiUrl, {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			});
+
+			if (!fetchResponse.ok) {
+				throw new Error(`Failed to fetch results: ${fetchResponse.status}`);
+			}
+
+			const signer: Signer = await fetchResponse.json();
+
+			return signer;
+		} catch (error) {
+			console.error("Error fetching signer:", error);
+			throw error;
+		}
+	}
+
 	async fetchHistory(fid: number): Promise<Nomination[]> {
 		const apiUrl = process.env.TOTH_API
 			? `${process.env.TOTH_API}/history?fid=${fid}`
@@ -34,7 +60,7 @@ export class MongoDBService implements IDatabaseService {
 		}
 	}
 
-	async updateSigner(fid: number): Promise<Signer | undefined> {
+	async updateSigner(publicKey: string): Promise<Signer | undefined> {
 		const apiUrl = process.env.TOTH_API
 			? `${process.env.TOTH_API}/updateSigner`
 			: "";
@@ -45,7 +71,7 @@ export class MongoDBService implements IDatabaseService {
 				headers: {
 					"Content-Type": "application/json"
 				},
-				body: JSON.stringify({ fid })
+				body: JSON.stringify({ publicKey })
 			});
 
 			if (!fetchResponse.ok) {
@@ -95,7 +121,7 @@ export class MongoDBService implements IDatabaseService {
 		}
 	}
 
-	async storeSigner(fid: number, data: Signer) {
+	async storeSigner(data: Signer) {
 		const apiUrl = process.env.TOTH_API
 			? `${process.env.TOTH_API}/signers`
 			: "";
@@ -109,7 +135,6 @@ export class MongoDBService implements IDatabaseService {
 				body: JSON.stringify({
 					id: randomUUID(),
 					createdAt: new Date().toISOString(),
-					fid,
 					...data
 				})
 			});

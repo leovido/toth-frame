@@ -12,8 +12,9 @@ export interface IDatabaseService {
 	fetchNominationsByRound(roundId: string): Promise<Nomination[]>;
 	fetchNominationsByFid(fid: number): Promise<Nomination[]>;
 	fetchNominationById(id: string): Promise<Nomination[]>;
-	storeSigner(fid: number, data: Signer): Promise<unknown>;
-	updateSigner(fid: number): Promise<Signer | undefined>;
+	storeSigner(data: Signer): Promise<unknown>;
+	updateSigner(publicKey: string): Promise<Signer | undefined>;
 	fetchSigner(fid: number): Promise<Signer | undefined>;
+	fetchSignerByPKey(publicKey: string): Promise<Signer | undefined>;
 	fetchHistory(fid: number): Promise<Nomination[]>;
 }

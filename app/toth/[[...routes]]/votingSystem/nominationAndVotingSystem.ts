@@ -49,12 +49,12 @@ export class NominationAndVotingSystem {
 		}
 	}
 
-	public async storeSigner(fid: number, data: Signer) {
-		await this.db.storeSigner(fid, data);
+	public async storeSigner(data: Signer) {
+		await this.db.storeSigner(data);
 	}
 
-	public async updateSigner(fid: number) {
-		const signer = await this.db.updateSigner(fid);
+	public async updateSigner(publicKey: string) {
+		const signer = await this.db.updateSigner(publicKey);
 		return signer;
 	}
 
@@ -69,6 +69,12 @@ export class NominationAndVotingSystem {
 		console.log(`Vote received for: ${nominationId} by ${fid}`);
 
 		return vote;
+	}
+
+	public async fetchSignerByPKey(publicKey: string) {
+		const signer = await this.db.fetchSignerByPKey(publicKey);
+
+		return signer;
 	}
 
 	public async fetchNominations() {

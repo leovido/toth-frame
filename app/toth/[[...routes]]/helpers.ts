@@ -1,5 +1,5 @@
 import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { castNetworth, client } from "./client";
+import { castNetworth } from "./client";
 import { getSignedKey } from "@/utils/getSignedKey";
 import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
 import axios from "axios";
@@ -46,10 +46,10 @@ export const firstRun = async (castId: string, forceRefresh: boolean) => {
 
 export const createAndStoreSignerDB: (
 	fid: number
-) => Promise<Signer | undefined> = async (fid: number) => {
+) => Promise<Signer | undefined> = async () => {
 	try {
 		const response = await getSignedKey();
-		votingSystem.storeSigner(fid, response);
+		votingSystem.storeSigner(response);
 
 		return response;
 	} catch (error) {
@@ -57,33 +57,32 @@ export const createAndStoreSignerDB: (
 	}
 };
 
-export async function fetchOrCreateAndVerifySigner(fid: number) {
+export async function fetchSigner(fid: number) {
 	try {
 		const existingSigner = await votingSystem.fetchSigner(fid);
 
-		if (existingSigner) {
-			const signer = await client.lookupDeveloperManagedSigner(
-				existingSigner.public_key
-			);
-			return {
-				...signer,
-				signer_uuid: existingSigner?.signer_uuid ?? ""
-			};
-		} else {
-			const response = await axios.post("http://localhost:3000/api/signer");
-			const signer = response.data;
-			if (response.status === 200) {
-				await axios.post("http://localhost:3000/api/storeSigner", {
-					fid: fid,
-					signer
-				});
-				return signer;
-			} else {
-				return undefined;
-			}
-		}
+		return existingSigner;
 	} catch (error) {
 		console.error("Error fetching, creating, or verifying signer:", error);
+		// Handle error appropriately, e.g., return a default value or rethrow
+		throw error; // or return { signer: null, signerVerificationStatus: null };
+	}
+}
+
+export async function createAndVerifySigner() {
+	try {
+		const response = await axios.post(`${process.env.PUBLIC_URL}/api/signer`);
+		const signer = response.data;
+		if (response.status === 200) {
+			await axios.post(`${process.env.PUBLIC_URL}/api/storeSigner`, {
+				signer
+			});
+			return signer;
+		} else {
+			return undefined;
+		}
+	} catch (error) {
+		console.error("Error creating, or verifying signer:", error);
 		// Handle error appropriately, e.g., return a default value or rethrow
 		throw error; // or return { signer: null, signerVerificationStatus: null };
 	}

@@ -2,9 +2,9 @@ import { votingSystem } from "@/app/toth/[[...routes]]/votingSystem/nominationAn
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-	const { fid, signer } = await req.json();
+	const { signer } = await req.json();
 	try {
-		await votingSystem.storeSigner(fid, signer);
+		await votingSystem.storeSigner(signer);
 
 		return NextResponse.json(signer, {
 			status: 200

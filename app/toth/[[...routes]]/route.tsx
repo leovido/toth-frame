@@ -7,7 +7,7 @@ import { devtools } from "frog/dev";
 import { handle } from "frog/next";
 import { serveStatic } from "frog/serve-static";
 import { vars } from "../../ui";
-import { fetchOrCreateAndVerifySigner, firstRun } from "./helpers";
+import { fetchSigner, firstRun } from "./helpers";
 import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
 import { client, verifyCastURL } from "./client";
 import { Nomination } from "./votingSystem/types";
@@ -766,7 +766,7 @@ app.frame("/signer", async (c) => {
 	const { frameData } = c;
 
 	const fid = frameData?.fid ?? 0;
-	const signer = await fetchOrCreateAndVerifySigner(fid);
+	const signer = await fetchSigner(fid);
 
 	const statusMessage = () => {
 		if (signer) {
@@ -778,7 +778,7 @@ app.frame("/signer", async (c) => {
 				case "revoked":
 					return "Revoked";
 				default:
-					break;
+					return "Disconnected";
 			}
 		} else {
 			return "Disconnected";

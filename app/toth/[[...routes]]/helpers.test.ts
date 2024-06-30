@@ -1,4 +1,4 @@
-import { fetchOrCreateAndVerifySigner } from "./helpers";
+import { createAndVerifySigner } from "./helpers";
 import { votingSystem } from "./votingSystem/nominationAndVotingSystem";
 import { createAndStoreSignerDB } from "./helpers";
 import { client } from "./client";
@@ -7,7 +7,7 @@ import { client } from "./client";
 jest.mock("./client");
 jest.mock("./helpers");
 
-describe("fetchOrCreateAndVerifySigner", () => {
+describe("createAndVerifySigner", () => {
 	const mockFetchSigner = votingSystem.fetchSigner as jest.Mock;
 	const mockCreateAndStoreSigner = createAndStoreSignerDB as jest.Mock;
 	const mockLookupDeveloperManagedSigner =
@@ -23,7 +23,7 @@ describe("fetchOrCreateAndVerifySigner", () => {
 			existingSignerVerificationStatus
 		);
 
-		const result = await fetchOrCreateAndVerifySigner(fid);
+		const result = await createAndVerifySigner();
 
 		expect(mockFetchSigner).toHaveBeenCalledWith(fid);
 		expect(mockCreateAndStoreSigner).not.toHaveBeenCalled();
@@ -47,7 +47,7 @@ describe("fetchOrCreateAndVerifySigner", () => {
 			newSignerVerificationStatus
 		);
 
-		const result = await fetchOrCreateAndVerifySigner(fid);
+		const result = await createAndVerifySigner();
 
 		expect(mockFetchSigner).toHaveBeenCalledWith(fid);
 		expect(mockCreateAndStoreSigner).toHaveBeenCalledWith(fid);
@@ -68,7 +68,7 @@ describe("fetchOrCreateAndVerifySigner", () => {
 			throw error;
 		});
 
-		await expect(fetchOrCreateAndVerifySigner(fid)).rejects.toThrow(error);
+		await expect(createAndVerifySigner()).rejects.toThrow(error);
 		expect(mockFetchSigner).toHaveBeenCalledWith(fid);
 		expect(mockCreateAndStoreSigner).not.toHaveBeenCalled();
 		expect(mockLookupDeveloperManagedSigner).not.toHaveBeenCalled();
