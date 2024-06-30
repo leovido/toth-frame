@@ -16,17 +16,14 @@ export async function POST() {
 
 export async function GET(req: Request) {
 	const { searchParams } = new URL(req.url);
-	const signer_uuid = searchParams.get("signer_uuid");
+	const pub_key = searchParams.get("pub_key");
 
-	if (!signer_uuid) {
-		return NextResponse.json(
-			{ error: "signer_uuid is required" },
-			{ status: 400 }
-		);
+	if (!pub_key) {
+		return NextResponse.json({ error: "pub_key is required" }, { status: 400 });
 	}
 
 	try {
-		const signer = await client.lookupSigner(signer_uuid);
+		const signer = await client.lookupDeveloperManagedSigner(pub_key);
 
 		return NextResponse.json(signer, { status: 200 });
 	} catch (error) {

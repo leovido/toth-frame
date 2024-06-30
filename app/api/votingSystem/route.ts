@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
 	try {
-		const { fid } = await req.json();
+		const fid = await req.nextUrl.searchParams.get("fid");
 
-		const signer = await votingSystem.updateSigner(fid);
+		const signer = await votingSystem.updateSigner(Number(fid));
 		return NextResponse.json(signer, {
 			status: 200
 		});
 	} catch (error) {
-		return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+		return NextResponse.json(`${error}`, { status: 500 });
 	}
 }

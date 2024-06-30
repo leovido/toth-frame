@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import axios from "axios";
 import QRCode from "qrcode.react";
+import { useSearchParams } from "next/navigation";
 
 interface FarcasterUser {
 	signer_uuid: string;
@@ -14,6 +15,8 @@ interface FarcasterUser {
 }
 
 export default function Home() {
+	const params = useSearchParams();
+
 	const LOCAL_STORAGE_KEYS = {
 		FARCASTER_USER: "farcasterUser"
 	};
@@ -33,7 +36,9 @@ export default function Home() {
 		const updateSigner = async () => {
 			try {
 				if (farcasterUser?.status === "approved") {
-					const response = await fetch("/api/votingSystem");
+					const response = await fetch(
+						`/api/votingSystem?fid=${farcasterUser.fid}`
+					);
 					await response.json();
 				}
 			} catch (error) {
@@ -51,7 +56,7 @@ export default function Home() {
 				intervalId = setInterval(async () => {
 					try {
 						const response = await axios.get(
-							`/api/signer?signer_uuid=${farcasterUser?.signer_uuid}`
+							`/api/signer?pub_key=${farcasterUser?.public_key}`
 						);
 						const user = response.data as FarcasterUser;
 
@@ -106,8 +111,12 @@ export default function Home() {
 
 	const fetchExistingSigner = async () => {
 		try {
-			const response = await axios.get("/api/currentSigner");
-			console.warn(response, "here");
+			const response = await axios.get("/api/currentSigner", {
+				params: {
+					fid: params.get("fid")
+				}
+			});
+
 			if (response.status === 200) {
 				localStorage.setItem(
 					LOCAL_STORAGE_KEYS.FARCASTER_USER,

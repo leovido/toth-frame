@@ -34,7 +34,7 @@ export class MongoDBService implements IDatabaseService {
 		}
 	}
 
-	async updateSigner(fid: number): Promise<void> {
+	async updateSigner(fid: number): Promise<Signer | undefined> {
 		const apiUrl = process.env.TOTH_API
 			? `${process.env.TOTH_API}/updateSigner`
 			: "";
@@ -52,10 +52,10 @@ export class MongoDBService implements IDatabaseService {
 				throw new Error(`Failed to fetch results: ${fetchResponse.status}`);
 			}
 
-			if (fetchResponse.status === 200) {
-				await fetchResponse.json();
+			if (fetchResponse.status === 201) {
+				const updateSigner = await fetchResponse.json();
 
-				return;
+				return updateSigner;
 			} else {
 				return undefined;
 			}
@@ -136,7 +136,6 @@ export class MongoDBService implements IDatabaseService {
 			}
 		);
 
-		console.warn(fetchResponse, "here");
 		if (!fetchResponse.ok) {
 			throw new Error(`Failed to fetch results: ${fetchResponse.status}`);
 		}

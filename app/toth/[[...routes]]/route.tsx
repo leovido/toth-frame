@@ -1263,9 +1263,6 @@ app.frame("/vote", async (c) => {
 				previousState.selectedCast++;
 			}
 		}
-		if (buttonValue === "prevCast") {
-			previousState.selectedCast--;
-		}
 	});
 
 	const { formatted: nominationsWithVotes } = formattedNominations(nominations);
@@ -1413,25 +1410,18 @@ app.frame("/vote", async (c) => {
 		),
 		intents: !hasUserVoted
 			? [
+					<Button action="/status" value="back">
+						Back
+					</Button>,
 					nominationsWithVotes.length > 0 && (
 						<Button action="/vote" value="finalVote">
 							Vote
-						</Button>
-					),
-					nominationsWithVotes.length === 0 && (
-						<Button action="/status" value="back">
-							Back
 						</Button>
 					),
 					nominations.length > 0 && (
 						<Button.Redirect location={selectedCast}>
 							View selected cast
 						</Button.Redirect>
-					),
-					state.selectedCast > 0 && (
-						<Button action="/vote" value="prevCast">
-							↑
-						</Button>
 					),
 					state.selectedCast < nominations.length - 1 && (
 						<Button action="/vote" value="nextCast">
