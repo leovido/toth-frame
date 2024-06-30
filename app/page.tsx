@@ -24,8 +24,10 @@ export default function Home() {
 	const [farcasterUser, setFarcasterUser] = useState<FarcasterUser | null>(
 		null
 	);
+
 	useEffect(() => {
 		const storedData = localStorage.getItem(LOCAL_STORAGE_KEYS.FARCASTER_USER);
+		console.warn(storedData, "storedData");
 		if (storedData) {
 			const user: FarcasterUser = JSON.parse(storedData);
 			setFarcasterUser(user);
@@ -116,6 +118,7 @@ export default function Home() {
 					fid: params.get("fid")
 				}
 			});
+			console.warn(response, "response");
 
 			if (response.status === 200) {
 				localStorage.setItem(
@@ -166,7 +169,9 @@ export default function Home() {
 				)}
 			{farcasterUser?.status == "approved" && (
 				<div className={styles.castSection}>
-					<div className={styles.userInfo}>Hello {farcasterUser.fid} 👋</div>
+					<div className={styles.userInfo} style={{ color: "white" }}>
+						Hello {farcasterUser.fid} 👋
+					</div>
 
 					<h1 style={{ fontSize: "30px", color: "#30E000", fontWeight: 400 }}>
 						TOTH will cast on your behalf to the winner of each round.
