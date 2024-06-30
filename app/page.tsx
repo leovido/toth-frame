@@ -36,7 +36,7 @@ export default function Home() {
 			try {
 				if (farcasterUser?.status === "approved") {
 					const response = await fetch(
-						`/api/votingSystem?publicKey=${farcasterUser.public_key}`
+						`/api/votingSystem?publicKey=${farcasterUser.public_key}&fid=${farcasterUser.fid}`
 					);
 					await response.json();
 				}

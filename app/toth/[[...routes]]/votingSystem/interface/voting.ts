@@ -13,7 +13,7 @@ export interface IDatabaseService {
 	fetchNominationsByFid(fid: number): Promise<Nomination[]>;
 	fetchNominationById(id: string): Promise<Nomination[]>;
 	storeSigner(data: Signer): Promise<unknown>;
-	updateSigner(publicKey: string): Promise<Signer | undefined>;
+	updateSigner(publicKey: string, fid: number): Promise<Signer | undefined>;
 	fetchSigner(fid: number): Promise<Signer | undefined>;
 	fetchSignerByPKey(publicKey: string): Promise<Signer | undefined>;
 	fetchHistory(fid: number): Promise<Nomination[]>;

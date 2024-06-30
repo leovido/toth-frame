@@ -53,8 +53,8 @@ export class NominationAndVotingSystem {
 		await this.db.storeSigner(data);
 	}
 
-	public async updateSigner(publicKey: string) {
-		const signer = await this.db.updateSigner(publicKey);
+	public async updateSigner(publicKey: string, fid: number) {
+		const signer = await this.db.updateSigner(publicKey, fid);
 		return signer;
 	}
 

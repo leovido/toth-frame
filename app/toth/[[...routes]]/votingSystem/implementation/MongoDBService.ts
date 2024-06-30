@@ -60,7 +60,10 @@ export class MongoDBService implements IDatabaseService {
 		}
 	}
 
-	async updateSigner(publicKey: string): Promise<Signer | undefined> {
+	async updateSigner(
+		publicKey: string,
+		fid: number
+	): Promise<Signer | undefined> {
 		const apiUrl = process.env.TOTH_API
 			? `${process.env.TOTH_API}/updateSigner`
 			: "";
@@ -71,7 +74,7 @@ export class MongoDBService implements IDatabaseService {
 				headers: {
 					"Content-Type": "application/json"
 				},
-				body: JSON.stringify({ publicKey })
+				body: JSON.stringify({ publicKey, fid })
 			});
 
 			if (!fetchResponse.ok) {
@@ -93,7 +96,7 @@ export class MongoDBService implements IDatabaseService {
 
 	async fetchSigner(fid: number): Promise<Signer | undefined> {
 		const apiUrl = process.env.TOTH_API
-			? `${process.env.TOTH_API}/signers?fid=${fid}`
+			? `${process.env.TOTH_API}/signersByFid?fid=${fid}`
 			: "";
 
 		try {
