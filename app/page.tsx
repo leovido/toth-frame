@@ -27,7 +27,6 @@ export default function Home() {
 
 	useEffect(() => {
 		const storedData = localStorage.getItem(LOCAL_STORAGE_KEYS.FARCASTER_USER);
-		console.warn(storedData, "storedData");
 		if (storedData) {
 			const user: FarcasterUser = JSON.parse(storedData);
 			setFarcasterUser(user);
