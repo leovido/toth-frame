@@ -28,7 +28,7 @@ interface State {
 }
 
 const app = new Frog<{ State: State }>({
-	verify: process.env.CONFIG === "PROD",
+	verify: false,
 	initialState: {
 		stateInfo: 0,
 		selectedCast: 0,
