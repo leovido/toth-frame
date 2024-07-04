@@ -129,17 +129,18 @@ export class MongoDBService implements IDatabaseService {
 			? `${process.env.TOTH_API}/signers`
 			: "";
 
+		const body = JSON.stringify({
+			id: randomUUID(),
+			createdAt: new Date().toISOString(),
+			...data
+		});
 		try {
 			const fetchResponse = await fetch(apiUrl, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json"
 				},
-				body: JSON.stringify({
-					id: randomUUID(),
-					createdAt: new Date().toISOString(),
-					...data
-				})
+				body: body
 			});
 
 			if (!fetchResponse.ok) {
