@@ -4,6 +4,7 @@ import { Space_Mono } from "next/font/google";
 import "./globals.scss";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
+import { ToastContainer } from "react-toastify";
 import { AppProvider } from "./Context/AppContext";
 
 const inter = Space_Mono({ subsets: ["latin"], weight: ["400", "700"] });
@@ -24,8 +25,11 @@ export default function RootLayout({
 				<title>TOTH</title>
 			</head>
 			<body className={inter.className}>
-				<SpeedInsights />
-				<AppProvider>{children}</AppProvider>
+				<AppProvider>
+					{children}
+					<ToastContainer />
+					<SpeedInsights />
+				</AppProvider>
 			</body>
 		</html>
 	);
