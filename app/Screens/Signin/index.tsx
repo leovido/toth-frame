@@ -71,7 +71,7 @@ const Signin = () => {
 			// eslint-disable-next-line
 			delete window.onSignInSuccess; // Clean up the global callback
 		};
-	}, []);
+	}, [setFid, setSignerUuid, setUser]);
 
 	useEffect(() => {
 		setIsClient(true);
