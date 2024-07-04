@@ -4,7 +4,6 @@ import { getMessage, welcomeMessages } from "../../utils/helpers";
 import { useCallback, useEffect, useState } from "react";
 import { useApp } from "../../Context/AppContext";
 import useLocalStorage from "../../hooks/use-local-storage-state";
-import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 
 const Signin = () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -58,7 +57,7 @@ const Signin = () => {
 
 	useEffect(() => {
 		// eslint-disable-next-line
-		window.onSignInSuccess = (data: Signer) => {
+		window.onSignInSuccess = (data: unknown) => {
 			setUser({
 				signerUuid: data.signer_uuid,
 				fid: data.fid
