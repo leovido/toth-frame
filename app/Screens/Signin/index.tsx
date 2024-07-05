@@ -66,15 +66,12 @@ const Signin = () => {
 			setSignerUuid(signer.signer_uuid);
 			setFid(signer.fid?.toString() ?? "");
 		};
-
-		return () => {
-			delete window.onSignInSuccess;
-		};
 	}, [setFid, setSignerUuid, setUser]);
 
 	useEffect(() => {
 		setIsClient(true);
 	}, []);
+
 	const getButton = useCallback(() => {
 		return (
 			<div
