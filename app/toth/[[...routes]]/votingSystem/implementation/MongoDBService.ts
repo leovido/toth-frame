@@ -29,7 +29,7 @@ export class MongoDBService implements IDatabaseService {
 
 			return signer;
 		} catch (error) {
-			console.error("Error fetching signer:", error);
+			console.error("Error fetching signer by public key:", error);
 			throw error;
 		}
 	}
@@ -61,7 +61,8 @@ export class MongoDBService implements IDatabaseService {
 	}
 
 	async updateSigner(
-		publicKey: string,
+		status: string,
+		signerUUID: string,
 		fid: number
 	): Promise<Signer | undefined> {
 		const apiUrl = process.env.TOTH_API
@@ -74,7 +75,7 @@ export class MongoDBService implements IDatabaseService {
 				headers: {
 					"Content-Type": "application/json"
 				},
-				body: JSON.stringify({ publicKey, fid })
+				body: JSON.stringify({ status, signerUUID, fid })
 			});
 
 			if (!fetchResponse.ok) {
@@ -89,7 +90,7 @@ export class MongoDBService implements IDatabaseService {
 				return undefined;
 			}
 		} catch (error) {
-			console.error("Error fetching signer:", error);
+			console.error("Error updating signer:", error);
 			throw error;
 		}
 	}

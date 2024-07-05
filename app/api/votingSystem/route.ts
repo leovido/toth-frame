@@ -3,14 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
 	try {
-		const publicKey = await req.nextUrl.searchParams.get("publicKey");
 		const fid = await req.nextUrl.searchParams.get("fid");
 
-		const signer = await votingSystem.updateSigner(
-			publicKey ?? "",
-			Number(fid)
-		);
-		return NextResponse.json(signer, {
+		const signer = await votingSystem.fetchSigner(Number(fid));
+
+		return NextResponse.json(signer ?? {}, {
 			status: 200
 		});
 	} catch (error) {

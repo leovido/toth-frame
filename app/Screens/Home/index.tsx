@@ -1,11 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import ScreenLayout from "../layout";
 import { useApp } from "../../Context/AppContext";
+import axios from "axios";
+import useLocalStorage from "@/app/hooks/use-local-storage-state";
+import { UserInfo } from "@/app/types";
+import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 
 const Home = () => {
 	const { displayName, pfp } = useApp();
+
+	const [user] = useLocalStorage<UserInfo | null>("user", null);
+
+	useEffect(() => {
+		const process = async () => {
+			if (user) {
+				try {
+					const [response, checkExists] = await Promise.all([
+						axios.get(`/api/signer?signerUUID=${user.signerUuid}`),
+						axios.get(`/api/votingSystem?fid=${user.fid}`)
+					]);
+
+					if (checkExists.data.signer_uuid === undefined) {
+						const signer: Signer = response.data;
+
+						await axios.post("/api/storeSigner", {
+							signer
+						});
+					} else {
+						return;
+					}
+				} catch (error) {
+					console.error(error);
+				}
+			}
+		};
+		process();
+	}, [user]);
 
 	return (
 		<ScreenLayout>
