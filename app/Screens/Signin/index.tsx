@@ -4,6 +4,7 @@ import { getMessage, welcomeMessages } from "../../utils/helpers";
 import { useCallback, useEffect, useState } from "react";
 import { useApp } from "../../Context/AppContext";
 import useLocalStorage from "../../hooks/use-local-storage-state";
+import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 
 const Signin = () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -56,19 +57,18 @@ const Signin = () => {
 	}
 
 	useEffect(() => {
-		// eslint-disable-next-line
 		window.onSignInSuccess = (data: unknown) => {
+			const signer: Signer = data as Signer;
 			setUser({
-				signerUuid: data.signer_uuid,
-				fid: data.fid
+				signerUuid: signer.signer_uuid,
+				fid: signer.fid
 			});
-			setSignerUuid(data.signer_uuid);
-			setFid(data.fid);
+			setSignerUuid(signer.signer_uuid);
+			setFid(signer.fid?.toString() ?? "");
 		};
 
 		return () => {
-			// eslint-disable-next-line
-			delete window.onSignInSuccess; // Clean up the global callback
+			delete window.onSignInSuccess;
 		};
 	}, [setFid, setSignerUuid, setUser]);
 
