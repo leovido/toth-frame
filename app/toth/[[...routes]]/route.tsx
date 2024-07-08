@@ -42,6 +42,7 @@ const app = new Frog<{ State: State }>({
 	assetsPath: "/",
 	basePath: "/toth",
 	ui: { vars },
+	title: "🎩 Tip O' The Hat 🎩",
 	imageOptions: {
 		fonts: [
 			{
