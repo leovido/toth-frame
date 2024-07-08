@@ -14,6 +14,7 @@ import { Nomination } from "./votingSystem/types";
 import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 import { createNomination } from "./votingSystem/nomination";
 import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import "dotenv/config";
 
 interface State {
 	fcUser?: Signer;
