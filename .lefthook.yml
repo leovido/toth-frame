@@ -1,6 +1,8 @@
 pre-commit:
   parallel: true
   commands:
+    build:
+      run: npm run build
     lint:
       run: npm run lint
 

@@ -28,7 +28,7 @@ interface State {
 }
 
 const app = new Frog<{ State: State }>({
-	verify: false,
+	verify: process.env.NEXT_PUBLIC_CONFIG === "production" || "silent",
 	initialState: {
 		stateInfo: 0,
 		selectedCast: 0,
@@ -1102,8 +1102,13 @@ app.frame("/status", async (c) => {
 			<Button action="/" value="intro">
 				Intro
 			</Button>,
-			isNominationRound && !state.didNominate && (
+			isNominationRound && state.didNominate && (
 				<Button action="/nominate" value="nominate">
+					Nominate
+				</Button>
+			),
+			isNominationRound && !state.didNominate && (
+				<Button action="/nominateSuccess" value="nominateSuccess">
 					Nominate
 				</Button>
 			),
@@ -1548,7 +1553,76 @@ app.frame("/nominate", async (c) => {
 		),
 		intents: generateNominateIntents(
 			userNomination.length > 0,
-			state.isPowerBadgeUser
+			state.isPowerBadgeUser,
+			undefined
+		)
+	});
+});
+
+app.frame("/nominateSuccess", async (c) => {
+	const { frameData, deriveState } = c;
+
+	const state = deriveState(() => {});
+	const fid = frameData?.fid ?? 0;
+
+	const userNomination = await votingSystem.fetchNominationsByFid(fid);
+
+	const selectedCast = `https://warpcast.com/${userNomination[0].username}/${userNomination[0].castId}`;
+
+	return c.res({
+		image: (
+			<div
+				style={{
+					fontFamily: "Open Sans",
+					alignItems: "center",
+					background: "#17101F",
+					backgroundSize: "100% 100%",
+					display: "flex",
+					flexDirection: "column",
+					flexWrap: "nowrap",
+					height: "100%",
+					justifyContent: "center",
+					textAlign: "center",
+					width: "100%"
+				}}
+			>
+				<h1
+					style={{
+						fontFamily: "Space Mono",
+						fontSize: "5rem",
+						color: "#38BDF8"
+					}}
+				>
+					🎩 TOTH - Nominate 🎩
+				</h1>
+
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						justifyContent: "center"
+					}}
+				>
+					<h2
+						style={{
+							fontSize: "3.5rem",
+							color: "#D6FFF6",
+							fontWeight: 400
+						}}
+					>
+						You nominated{" "}
+						{userNomination.length > 0 ? userNomination[0].username : ""}
+					</h2>
+					<h2 style={{ fontSize: "3rem", color: "#30E000" }}>
+						Voting starts in {timeFormattedVoting()}
+					</h2>
+				</div>
+			</div>
+		),
+		intents: generateNominateIntents(
+			userNomination.length > 0,
+			state.isPowerBadgeUser,
+			selectedCast
 		)
 	});
 });
@@ -1707,7 +1781,8 @@ export const POST = handle(app);
 
 const generateNominateIntents = (
 	didNominate: boolean,
-	isPowerBadgeUser: boolean
+	isPowerBadgeUser: boolean,
+	selectedCast?: string
 ) => {
 	if (didNominate) {
 		return [
@@ -1721,7 +1796,12 @@ const generateNominateIntents = (
 			),
 			<Button action="/history" value="history">
 				History
-			</Button>
+			</Button>,
+			selectedCast !== undefined && (
+				<Button.Redirect location={selectedCast}>
+					View selected cast
+				</Button.Redirect>
+			)
 		];
 	} else {
 		return [
