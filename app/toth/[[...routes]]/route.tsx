@@ -1548,7 +1548,7 @@ app.frame("/nominate", async (c) => {
 								fontWeight: 400
 							}}
 						>
-							You nominated{" "}
+							You nominated @
 							{userNomination.length > 0 ? userNomination[0].username : ""}
 						</h2>
 						<h2 style={{ fontSize: "3rem", color: "#30E000" }}>
@@ -1561,7 +1561,8 @@ app.frame("/nominate", async (c) => {
 		intents: generateNominateIntents(
 			userNomination.length > 0,
 			state.isPowerBadgeUser,
-			undefined
+			castURL,
+			userNomination.length > 0 ? userNomination[0].username : undefined
 		)
 	});
 });
@@ -1617,7 +1618,7 @@ app.frame("/nominateSuccess", async (c) => {
 							fontWeight: 400
 						}}
 					>
-						You nominated{" "}
+						You nominated @
 						{userNomination.length > 0 ? userNomination[0].username : ""}
 					</h2>
 					<h2 style={{ fontSize: "3rem", color: "#30E000" }}>
