@@ -1295,6 +1295,10 @@ app.frame("/vote", async (c) => {
 		nominations.length > 0
 			? `https://warpcast.com/${nominations[state.selectedCast].username}/${nominations[state.selectedCast].castId}`
 			: "";
+	const encodedText = encodeURIComponent(
+		`Voted for @${nominations[state.selectedCast].username} for @tipothehat`
+	);
+	const cast = `https://warpcast.com/~/compose?text=${encodedText}&embeds[]=${selectedCast}&embeds[]=https://toth-frame.vercel.app/toth`;
 
 	return c.res({
 		image: (
@@ -1440,6 +1444,7 @@ app.frame("/vote", async (c) => {
 					<Button action="/vote" value="vote">
 						Refresh
 					</Button>,
+					<Button.Link href={cast}>Share</Button.Link>,
 					<Button action="/status" value="status">
 						Back
 					</Button>
