@@ -1624,7 +1624,8 @@ app.frame("/nominateSuccess", async (c) => {
 		intents: generateNominateIntents(
 			userNomination.length > 0,
 			state.isPowerBadgeUser,
-			selectedCast
+			selectedCast,
+			userNomination[0].username
 		)
 	});
 });
@@ -1784,9 +1785,15 @@ export const POST = handle(app);
 const generateNominateIntents = (
 	didNominate: boolean,
 	isPowerBadgeUser: boolean,
-	selectedCast?: string
+	selectedCast?: string,
+	username?: string
 ) => {
 	if (didNominate) {
+		const encodedText = encodeURIComponent(
+			`Nominated @${username} for @tipothehat`
+		);
+		const cast = `https://warpcast.com/~/compose?text=${encodedText}&embeds[]=${selectedCast}&embeds[]=https://toth-frame.vercel.app/toth`;
+
 		return [
 			<Button action="/status" value="status">
 				Back
@@ -1796,9 +1803,7 @@ const generateNominateIntents = (
 					Vote
 				</Button>
 			),
-			<Button action="/history" value="history">
-				History
-			</Button>,
+			<Button.Link href={cast}>Share</Button.Link>,
 			selectedCast !== undefined && (
 				<Button.Redirect location={selectedCast}>
 					View selected cast
