@@ -1104,12 +1104,12 @@ app.frame("/status", async (c) => {
 			<Button action="/" value="intro">
 				Intro
 			</Button>,
-			isNominationRound && state.didNominate && (
+			isNominationRound && !state.didNominate && (
 				<Button action="/nominate" value="nominate">
 					Nominate
 				</Button>
 			),
-			isNominationRound && !state.didNominate && (
+			isNominationRound && state.didNominate && (
 				<Button action="/nominateSuccess" value="nominateSuccess">
 					Nominate
 				</Button>
