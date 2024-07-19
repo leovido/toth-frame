@@ -45,7 +45,7 @@ export class NominationAndVotingSystem {
 
 			return signer;
 		} catch (error) {
-			throw new Error(`${error}`);
+			return undefined;
 		}
 	}
 
