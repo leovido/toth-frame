@@ -17,10 +17,13 @@ const Home = () => {
 		const process = async () => {
 			if (user) {
 				try {
-					const [response, checkExists] = await Promise.all([
-						axios.get(`/api/signer?signerUUID=${user.signerUuid}`),
-						axios.get(`/api/votingSystem?fid=${user.fid}`)
-					]);
+					const response = await axios.get(
+						`/api/signer?signerUUID=${user.signerUuid}`
+					);
+
+					const checkExists = await axios.get(
+						`/api/votingSystem?fid=${user.fid}`
+					);
 
 					if (checkExists.data.signer_uuid === undefined) {
 						const signer: Signer = response.data;
