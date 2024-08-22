@@ -1296,7 +1296,9 @@ app.frame("/vote", async (c) => {
 			? `https://warpcast.com/${nominations[state.selectedCast].username}/${nominations[state.selectedCast].castId}`
 			: "";
 	const encodedText = encodeURIComponent(
-		`Voted for @${nominations[state.selectedCast].username} for @tipothehat`
+		nominations.length > 0
+			? `Voted for @${nominations[state.selectedCast].username} for @tipothehat`
+			: ""
 	);
 	const cast = `https://warpcast.com/~/compose?text=${encodedText}&embeds[]=${selectedCast}&embeds[]=https://toth-frame.vercel.app/toth`;
 
