@@ -24,7 +24,6 @@ interface State {
 	totalDegen: number;
 	dollarValue: string;
 	castIdFid: number;
-	isPowerBadgeUser: boolean;
 	nominationsToVote: Nomination[];
 }
 
@@ -36,7 +35,6 @@ const app = new Frog<{ State: State }>({
 		totalDegen: 0,
 		dollarValue: "0",
 		castIdFid: 0,
-		isPowerBadgeUser: false,
 		nominationsToVote: []
 	},
 	assetsPath: "/",
@@ -963,9 +961,6 @@ app.frame("/status", async (c) => {
 
 	const fid = frameData?.fid ?? 0;
 
-	const response = await client.fetchBulkUsers([fid]);
-	const isPowerBadgeUser = response.users[0].power_badge;
-
 	const round = await votingSystem.getCurrentRounds();
 	const votingRound = round.find((r) => {
 		return r.status === "voting";
@@ -986,7 +981,6 @@ app.frame("/status", async (c) => {
 
 	const state = deriveState((previousState) => {
 		previousState.didNominate = userNomination !== undefined;
-		previousState.isPowerBadgeUser = isPowerBadgeUser;
 	});
 
 	const shouldShowNominationMessage =
@@ -1114,11 +1108,9 @@ app.frame("/status", async (c) => {
 					Nominate
 				</Button>
 			),
-			isPowerBadgeUser && (
-				<Button action="/vote" value="vote">
-					Vote
-				</Button>
-			),
+			<Button action="/vote" value="vote">
+				Vote
+			</Button>,
 			false && (
 				<Button action="/leaderboard" value="leaderboard">
 					Leaderboard
@@ -1455,7 +1447,7 @@ app.frame("/vote", async (c) => {
 });
 
 app.frame("/nominate", async (c) => {
-	const { frameData, inputText, deriveState, buttonValue } = c;
+	const { frameData, inputText, buttonValue } = c;
 
 	const fid = frameData?.fid ?? 0;
 
@@ -1469,7 +1461,6 @@ app.frame("/nominate", async (c) => {
 
 	// fetching one nomination for the day
 	let userNomination = await votingSystem.fetchNominationsByFid(fid);
-	const state = deriveState(() => {});
 
 	const regex = /https:\/\/warpcast\.com\/([^/]+)\/([^/]+)/;
 	const match = inputText?.match(regex);
@@ -1478,7 +1469,6 @@ app.frame("/nominate", async (c) => {
 		isValidCast,
 		match,
 		fid,
-		state.isPowerBadgeUser,
 		currentRound!
 	);
 
@@ -1562,7 +1552,6 @@ app.frame("/nominate", async (c) => {
 		),
 		intents: generateNominateIntents(
 			userNomination.length > 0,
-			state.isPowerBadgeUser,
 			castURL,
 			userNomination.length > 0 ? userNomination[0].username : undefined
 		)
@@ -1570,9 +1559,8 @@ app.frame("/nominate", async (c) => {
 });
 
 app.frame("/nominateSuccess", async (c) => {
-	const { frameData, deriveState } = c;
+	const { frameData } = c;
 
-	const state = deriveState(() => {});
 	const fid = frameData?.fid ?? 0;
 
 	const userNomination = await votingSystem.fetchNominationsByFid(fid);
@@ -1631,7 +1619,6 @@ app.frame("/nominateSuccess", async (c) => {
 		),
 		intents: generateNominateIntents(
 			userNomination.length > 0,
-			state.isPowerBadgeUser,
 			selectedCast,
 			userNomination[0].username
 		)
@@ -1792,7 +1779,6 @@ export const POST = handle(app);
 
 const generateNominateIntents = (
 	didNominate: boolean,
-	isPowerBadgeUser: boolean,
 	selectedCast?: string,
 	username?: string
 ) => {
@@ -1806,11 +1792,9 @@ const generateNominateIntents = (
 			<Button action="/status" value="status">
 				Back
 			</Button>,
-			isPowerBadgeUser && (
-				<Button action="/vote" value="vote">
-					Vote
-				</Button>
-			),
+			<Button action="/vote" value="vote">
+				Vote
+			</Button>,
 			<Button.Link href={cast}>Share</Button.Link>,
 			selectedCast !== undefined && (
 				<Button.Redirect location={selectedCast}>

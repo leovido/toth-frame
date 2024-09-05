@@ -5,7 +5,6 @@ export const createNomination = async (
 	isValidCast: boolean,
 	match: RegExpMatchArray | null | undefined,
 	fid: number,
-	isPowerBadgeUser: boolean,
 	currentRound: Round | undefined
 ) => {
 	if (isValidCast && match) {
@@ -24,7 +23,7 @@ export const createNomination = async (
 				castId: match[2],
 				fid: fid,
 				createdAt: today,
-				weight: isPowerBadgeUser ? 3 : 1,
+				weight: 3,
 				roundId: currentRound ? currentRound.id : ""
 			};
 			try {

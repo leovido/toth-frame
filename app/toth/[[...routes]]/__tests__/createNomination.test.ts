@@ -23,7 +23,6 @@ jest.mock("../votingSystem/nominationAndVotingSystem", () => {
 describe.skip("createNomination", () => {
 	const matchMock: RegExpMatchArray = ["", "testUser", "cast123"];
 	const fid = 1;
-	const isPowerBadgeUser = false;
 	const currentRound = {
 		id: "round1",
 		nominationStartTime: new Date("2024-01-01T19:00:00Z"),
@@ -47,13 +46,7 @@ describe.skip("createNomination", () => {
 	});
 
 	it("should successfully create a nomination when all conditions are met", async () => {
-		const result = await createNomination(
-			true,
-			matchMock,
-			fid,
-			isPowerBadgeUser,
-			currentRound
-		);
+		const result = await createNomination(true, matchMock, fid, currentRound);
 
 		// Assertions
 		expect(result).toEqual({
@@ -71,25 +64,13 @@ describe.skip("createNomination", () => {
 			.useFakeTimers()
 			.setSystemTime(new Date("2024-01-01T20:00:00Z").getTime());
 
-		const result = await createNomination(
-			true,
-			matchMock,
-			fid,
-			isPowerBadgeUser,
-			currentRound
-		);
+		const result = await createNomination(true, matchMock, fid, currentRound);
 
 		expect(result).toEqual([]);
 	});
 
 	it("should return an empty array if isValidCast is false or match is null", async () => {
-		const result = await createNomination(
-			false,
-			null,
-			fid,
-			isPowerBadgeUser,
-			currentRound
-		);
+		const result = await createNomination(false, null, fid, currentRound);
 		expect(result).toEqual([]);
 	});
 
