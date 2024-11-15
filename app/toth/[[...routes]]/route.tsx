@@ -15,6 +15,7 @@ import { timeFormattedNomination, timeFormattedVoting } from "./timeFormat";
 import { createNomination } from "./votingSystem/nomination";
 import { Signer } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import "dotenv/config";
+import { randomUUID } from "crypto";
 
 interface State {
 	fcUser?: Signer;
@@ -1292,7 +1293,8 @@ app.frame("/vote", async (c) => {
 			? `Voted for @${nominations[state.selectedCast].username} for @tipothehat`
 			: ""
 	);
-	const cast = `https://warpcast.com/~/compose?text=${encodedText}&embeds[]=${selectedCast}&embeds[]=https://toth-frame.vercel.app/toth`;
+	const random = randomUUID();
+	const cast = `https://warpcast.com/~/compose?text=${encodedText}&embeds[]=${selectedCast}&embeds[]=https://toth-frame.vercel.app/toth?utm_campaign=moxito_${random}`;
 
 	return c.res({
 		image: (
